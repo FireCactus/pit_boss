@@ -54,7 +54,7 @@ async def init_bet_size_table(ctx, players):
 
         # if a player entered a game with a bet that is bigger than their balance, change their bet to minimal
         elif player.money < bet_size_table[player.name]:
-            await ctx.send(f"{player.name}, Your bet was set at {bet_size_table_game[player.name]} but you only have {player.money}\nSetting your bet at the minimum ({min_bet})",delete_after=info_delete_after_seconds)
+            await ctx.send(f"{player.name}, Your bet was set at {bet_size_table[player.name]} but you only have {player.money}\nSetting your bet at the minimum ({min_bet})",delete_after=info_delete_after_seconds)
             bet_size_table[player.name] = min_bet
             
 
