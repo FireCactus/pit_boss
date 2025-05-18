@@ -1,14 +1,14 @@
 money: 0
 name: firecactus
-received_daily: true
+received_daily: false
 ---
-money: 125
+money: 100
 name: nyxeon_
-received_daily: true
+received_daily: false
 ---
-money: 50
+money: 25
 name: jamespow_
-received_daily: true
+received_daily: false
 ---
 money: 550
 name: xaevi
@@ -16,11 +16,11 @@ received_daily: false
 ---
 money: 0
 name: drhung2909
-received_daily: true
+received_daily: false
 ---
 money: 150
 name: mikolajczy01
-received_daily: true
+received_daily: false
 ---
 money: 25
 name: 39bonbon
@@ -28,7 +28,7 @@ received_daily: false
 ---
 money: 0
 name: jelly4465
-received_daily: true
+received_daily: false
 ---
 money: 475
 name: asystolia

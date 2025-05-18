@@ -94,7 +94,7 @@ class RouletteGame:
         result_color = boxes_string[18]
         result_number = numbers_list[18]
         if result_number == 0:
-            result_number = "chu"
+            result_number = "chuj"
 
         elif result_number % 2 == 0:
             result_number = "even"
@@ -121,7 +121,7 @@ class RouletteGame:
                 await ctx.send(f"{player.name} Lost {bet_size_table[player.name]}")
 
             #check for number win (even, odd)
-            if player.roulette_pick_number == result_number:
+            elif player.roulette_pick_number == result_number:
                 payout = bet_size_table[player.name] * payout_table['even_odd_payout']
                 player.money += payout
                 await ctx.send(f"{player.name} Won {payout}!")

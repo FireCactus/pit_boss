@@ -16,6 +16,15 @@ class GamePlayer:
 
 
 
+
+def renew_all_dailies():
+    players = load_all_players()
+
+    for player in players:
+        player.received_daily=False
+        save_player_to_file(player)
+
+
 def load_all_players():
     game_players = []
     with open(PLAYER_FILE_NAME, "r") as stream:
@@ -59,3 +68,4 @@ def save_player_to_file(game_player):
     with open(PLAYER_FILE_NAME, "w") as stream:
 
         yaml.dump_all(players, stream)
+
