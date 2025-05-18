@@ -163,12 +163,10 @@ async def transfer_money(ctx, arg_1, arg_2):
 async def get_user_balance(ctx, arg_1=None):
     user = str(ctx.message.author)
     await ctx.message.delete()
-    try:
-        player = bj.load_player_from_file(user)
-    except:
-        player = bj.BlackjackPlayer(user, starting_money)
-        bj.save_player_to_file(player)
     
+    init_player(user)
+    player = bj.load_player_from_file(user)   
+ 
     if arg_1 == "all":
         string = "---- All players money ----\n"
         for player in bj.load_all_players():
