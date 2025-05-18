@@ -1,12 +1,12 @@
-money: 199
+money: 0
 name: firecactus
 received_daily: true
 ---
-money: 25
+money: 125
 name: nyxeon_
 received_daily: true
 ---
-money: 62
+money: 50
 name: jamespow_
 received_daily: true
 ---
@@ -22,7 +22,7 @@ money: 150
 name: mikolajczy01
 received_daily: true
 ---
-money: 0
+money: 25
 name: 39bonbon
 received_daily: false
 ---

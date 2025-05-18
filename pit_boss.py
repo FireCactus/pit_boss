@@ -4,7 +4,9 @@ from env import token
 import asyncio
 
 import blackjack as bj
-import game_player as player
+import game_player as g_player
+
+import roulette as rlt
 
 
 intents = discord.Intents.default()
@@ -27,31 +29,104 @@ delete_after_seconds = 60
 info_delete_after_seconds = 15
 
 
+odd_reaction = "1️⃣"
+even_reaction = "2️⃣"
+black_reaction = "⬛"
+red_reaction = "🟥"
+green_reaction = "🟩"
+
+roulette_reactions = [green_reaction, black_reaction, red_reaction, even_reaction, odd_reaction]
+
+
 def init_player(user):
     try:
-        player = player.load_player_from_file(user)
+        player = g_player.load_player_from_file(user)
     except:
-        player = player.BlackjackPlayer(user, starting_money)
-        player.save_player_to_file(player)
+        player = g_player.GamePlayer(user, starting_money)
+        g_player.save_player_to_file(player)
 
-def init_bet_size_table(players):
+async def init_bet_size_table(ctx, players):
     for player in players:
         #check if player has a bet, if not set to minimal 
         if player.name not in bet_size_table.keys():
             bet_size_table[player.name] = min_bet
+            #check fif playr can afford the bet hes trying to make (more than 1 bet )
 
         # if a player entered a game with a bet that is bigger than their balance, change their bet to minimal
         elif player.money < bet_size_table[player.name]:
-            await ctx.send(f"{user}, Your bet was set at {bet_size_table_game[player.name]} but you only have {player.money}\nSetting your bet at the minimum ({min_bet})",delete_after=info_delete_after_seconds)
+            await ctx.send(f"{player.name}, Your bet was set at {bet_size_table_game[player.name]} but you only have {player.money}\nSetting your bet at the minimum ({min_bet})",delete_after=info_delete_after_seconds)
             bet_size_table[player.name] = min_bet
+            
 
 
 @bot.command("roulette")
 async def roulette_start(ctx):
     
+    #remove starting message
     user = str(ctx.message.author)
     init_player(user)
-    await ctx.message.delete()
+    await ctx.message.delete()    
+
+    message = await ctx.send(f"Spinning roulette table in {start_game_in} seconds, place your bets!")
+    for reaction in roulette_reactions:
+        await message.add_reaction(reaction)
+
+    await asyncio.sleep(start_game_in) # wait for everyone to place bets
+    message = await ctx.channel.fetch_message(message.id) #refresh message to get all new reactions
+
+    roulette_players = []
+    for reaction in message.reactions:
+        users = [user async for user in reaction.users()]
+
+        for user in users:
+            if user == bot.user:
+                continue
+        
+            player = g_player.load_player_from_file(str(user))
+
+            if reaction.emoji == odd_reaction:
+                player.roulette_pick_number = "odd"
+                player.roulette_pick_color = None
+            
+            elif reaction.emoji == even_reaction:
+                player.roulette_pick_number = "even"
+                player.roulette_pick_color = None
+
+            elif reaction.emoji in [black_reaction, red_reaction, green_reaction]:
+                player.roulette_pick_color = reaction.emoji
+                player.roulette_pick_number = None
+            
+            roulette_players.append(player)
+
+    await message.delete() #remove starting message
+
+    #init bet table
+    await init_bet_size_table(ctx, roulette_players)
+    bet_size_table_game = bet_size_table.copy()
+
+    game = rlt.RouletteGame()
+    # add players to game
+    for player in roulette_players:
+        if player.money >= min_bet:
+            game.add_player_to_game(player)
+    
+    if len(roulette_players) < 1:
+        await ctx.send("noone placed a bet", delete_after_seconds=info_delete_after_seconds)
+        return None
+
+    #print the bets
+    string = "(Change your bet with !bet size [amount])\n"
+    for player in roulette_players:
+        if player.roulette_pick_color != None:
+            string += f"       -{player.name} bet: {bet_size_table[player.name]} on {player.roulette_pick_color}\n"
+        if player.roulette_pick_number != None:
+            string += f"       -{player.name} bet: {bet_size_table[player.name]} on {player.roulette_pick_number}\n"
+
+    string += "------------------------------------------------------------"
+    await ctx.send(string, delete_after=delete_after_seconds)
+
+    #start game
+    await game.start_game_discord(ctx, bet_size_table_game)
 
 
 
@@ -71,6 +146,7 @@ async def help(ctx):
     string += f"!bet size [amount] -> Changes your bet size to the provided amount\n"
     string += f"!give [player name] [amount] -> Transfers an amount of money from your account to the provided users\n"
     string += f"!all in -> Changes your bet size to the maximum allowed\n"
+    string += f"!roulette -> starts roulette game\n"
 
     await ctx.send(string, delete_after=info_delete_after_seconds*2)
 
@@ -81,7 +157,7 @@ async def change_bet_to_max(ctx, arg_1, ):
         user = str(ctx.message.author)
 
         init_player(user)
-        player = player.load_player_from_file(user)    
+        player = g_player.load_player_from_file(user)    
 
         await ctx.message.delete()
 
@@ -102,7 +178,7 @@ async def change_bet_to_max(ctx):
     user = str(ctx.message.author)
 
     init_player(user)
-    player = player.load_player_from_file(user)    
+    player = g_player.load_player_from_file(user)    
 
     await ctx.message.delete()
 
@@ -113,7 +189,7 @@ async def change_bet_to_max(ctx):
     player.received_daily = True
     player.money += daily_reward
 
-    player.save_player_to_file(player)
+    g_player.save_player_to_file(player)
     await ctx.send(f"{player.name} received their daily reward! {daily_reward} added to balance",delete_after=info_delete_after_seconds)
 
 
@@ -125,7 +201,7 @@ async def change_player_bet(ctx, arg_1, arg_2):
         await ctx.message.delete()
 
         init_player(user)
-        player = player.load_player_from_file(user)    
+        player = g_player.load_player_from_file(user)    
     
         try:
             arg_2 = int(arg_2)
@@ -151,7 +227,7 @@ async def transfer_money(ctx, arg_1, arg_2):
     init_player(user)
 
     
-    from_user =  player.load_player_from_file(user)
+    from_user =  g_player.load_player_from_file(user)
     to_user = arg_1
     try:
         amount = int(arg_2)
@@ -159,13 +235,13 @@ async def transfer_money(ctx, arg_1, arg_2):
         await ctx.send(f"{arg_2} is an invalid amount",delete_after=info_delete_after_seconds)
     
     player_names = []
-    for player in player.load_all_players():
+    for player in g_player.load_all_players():
         player_names.append(player.name)
     
     if to_user not in player_names:
         await ctx.send(f"No such User as {to_user}",delete_after=info_delete_after_seconds)
     else:
-        to_user = player.load_player_from_file(to_user)
+        to_user = g_player.load_player_from_file(to_user)
     
     if to_user.name == from_user.name:
         await ctx.send(f"You can't send money to yourself",delete_after=info_delete_after_seconds)
@@ -182,8 +258,8 @@ async def transfer_money(ctx, arg_1, arg_2):
         to_user.money += amount
         await ctx.send(f"Transferred {amount} from {from_user.name} to {to_user.name}",delete_after=info_delete_after_seconds)
 
-        player.save_player_to_file(from_user)
-        player.save_player_to_file(to_user)
+        g_player.save_player_to_file(from_user)
+        g_player.save_player_to_file(to_user)
 
         
 
@@ -193,11 +269,11 @@ async def get_user_balance(ctx, arg_1=None):
     await ctx.message.delete()
     
     init_player(user)
-    player = player.load_player_from_file(user)   
+    player = g_player.load_player_from_file(user)   
  
     if arg_1 == "all":
         string = "---- All players money ----\n"
-        for player in player.load_all_players():
+        for player in g_player.load_all_players():
             string += f"{player.name}   {player.money}\n--------------------\n"
         await ctx.send(string,delete_after=info_delete_after_seconds)
     else:
@@ -234,6 +310,7 @@ async def start_blackjack_game(ctx):
 
     for user in users_playing_bj:
         init_player(user)
+        player = g_player.load_player_from_file(user)
 
         if player.money >= min_bet:
             bj_players.append(player)
@@ -245,7 +322,7 @@ async def start_blackjack_game(ctx):
         return None
     
     #initialize bet table
-    init_bet_size_table(bj_players)
+    await init_bet_size_table(ctx, bj_players)
 
     game = bj.BlackjackGame()
 

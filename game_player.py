@@ -9,7 +9,9 @@ class GamePlayer:
         self.money = money
         self.received_daily = received_daily
         
-        self.hands = hands # list of lists containing cards
+        self.hands = hands # list of dicts containing cards [{bet:x,cards:[]}, {bet:x,cards:[]}]
+        self.roulette_pick_color = None  # string value - red, black, green
+        self.roulette_pick_number = None  # string value - odd, even
         self.dealer_cards = []
 
 

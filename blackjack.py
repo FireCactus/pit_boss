@@ -1,10 +1,9 @@
 from card_deck import Deck
 from card import Card
-import game_player as player
+import game_player as g_player
 
 import math
 import time
-import os
 import discord
 import asyncio
 
@@ -13,8 +12,6 @@ hit_reaction = "👆"
 split_reaction = "↔️"
 double_reaction = "🔥"
 
-
-clear = lambda: os.system('clear')
 
 DECKS_IN_PLAY = 6 # how many decks in the shoe
 PLAYER_STARTER_MONEY = 100
@@ -84,7 +81,7 @@ class BlackjackGame:
         if len(self.players) > self.max_players:
             raise ValueError("Not enough room at the table!\n the table can only fit {self.max_players} players")
 
-        if type(player) is BlackjackPlayer:
+        if type(player) is g_player.GamePlayer:
             if player.money < self.min_bet:
                 raise ValueError(f"Player doesnt have enough money to play! \n minimal bet is {self.min_bet}, player has {player.money}")
             if player not in self.players:
@@ -232,7 +229,7 @@ class BlackjackGame:
                 for hand in player.hands:
                     if calculate_blackjack_hand_value(hand) <= 21:
                         payout = math.floor(hand['bet'] * PAYOUT_TABLE["normal_win"])
-                        await ctx.send(f"   {player.name} Wins {payout}",delete_after=delete_after_seconds)
+                        await ctx.send(f"   {player.name} Wins {payout}")
                         player.money += payout
         else:
             for player in playing_players:
@@ -240,21 +237,21 @@ class BlackjackGame:
                     hand_value = calculate_blackjack_hand_value(hand)
 
                     if hand_value > 21:
-                        await ctx.send(f"   {player.name} Loses {hand['bet']}",delete_after=delete_after_seconds)
+                        await ctx.send(f"   {player.name} Loses {hand['bet']}",)
                         continue
 
                     if hand_value > dealer_total:
                         payout = math.floor(hand['bet'] * PAYOUT_TABLE["normal_win"])
-                        await ctx.send(f"   {player.name} Wins {payout}",delete_after=delete_after_seconds)
+                        await ctx.send(f"   {player.name} Wins {payout}")
                         player.money += payout
                     
                     elif hand_value == dealer_total:
                         payout = math.floor(hand['bet'] * PAYOUT_TABLE["draw"])
-                        await ctx.send(f"   {player.name} matched the dealer. draw payout: {payout}",delete_after=delete_after_seconds)
+                        await ctx.send(f"   {player.name} matched the dealer. draw payout: {payout}")
                         player.money += payout
                     
                     elif hand_value < dealer_total:
-                        await ctx.send(f"   {player.name} Loses {hand['bet']}",delete_after=delete_after_seconds)
+                        await ctx.send(f"   {player.name} Loses {hand['bet']}")
         
         string = "---------------------Current balance------------------------: \n"
         for player in self.players:
@@ -264,7 +261,7 @@ class BlackjackGame:
         
         #save players to file:
         for player in self.players:
-            player.save_player_to_file(player)
+            g_player.save_player_to_file(player)
         
 
     async def send_bj_table_to_discord(self, ctx):
