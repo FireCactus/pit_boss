@@ -1,6 +1,7 @@
 from card_deck import Deck
 from card import Card
-import yaml
+import game_player as player
+
 import math
 import time
 import os
@@ -25,65 +26,6 @@ PAYOUT_TABLE={
 }
 
 delete_after_seconds = 60
-
-
-class BlackjackPlayer:
-    def __init__(self, name, money=0, hands=[], received_daily=False):
-        self.name = name
-        self.money = money
-        self.received_daily = received_daily
-        
-        self.hands = hands # list of lists containing cards
-        self.dealer_cards = []
-
-
-def load_all_players(file="players.yaml"):
-    bj_players = []
-    with open(file, "r") as stream:
-        players = yaml.load_all(stream, yaml.FullLoader)
-
-        for player in players:
-            bj_player = BlackjackPlayer(player["name"], player['money'], received_daily=player['received_daily'])
-            bj_players.append(bj_player)
-    return bj_players
-
-            
-
-def load_player_from_file(player_name, file="players.yaml"):
-
-    with open(file, "r") as stream:
-        players = yaml.load_all(stream, yaml.FullLoader)
-
-        for player in players:
-            if player["name"] == player_name:
-                bj_player = BlackjackPlayer(player_name, player['money'], received_daily=player['received_daily'])
-                return bj_player
-        raise ValueError(f"Player {player_name} doesnt exist in player file")
-
-
-def save_player_to_file(bj_player, file="players.yaml"):
-    
-    with open(file, "r") as stream:
-        players = list(yaml.load_all(stream, yaml.FullLoader))
-
-        # Check if the player exists, and update or append
-        updated = False
-        for player in players:
-            if player["name"] == bj_player.name:
-                player["money"] = bj_player.money
-                player['received_daily'] = bj_player.received_daily
-                updated = True
-                break
-
-        if not updated:
-            players.append({"name": bj_player.name, "money": bj_player.money, 'received_daily':bj_player.received_daily})
-
-    # Write back all players to the file
-    with open(file, "w") as stream:
-
-        yaml.dump_all(players, stream)
-
-
     
 
 def calculate_blackjack_hand_value(cards):
@@ -155,82 +97,6 @@ class BlackjackGame:
             return
         
         self.players.remove(player)
-    
-    def ask_player_for_bet_cli(self, player):
-        clear()
-        while True:
-
-            bet = int(input(f"{player.name} bet ({player.money}): "))
-            if bet < self.min_bet or bet > self.max_bet:
-                print(f"Invalid bet size. minimal bet is {self.min_bet} maximal bet is {self.max_bet}")
-                continue
-            
-            
-            if bet > player.money:
-                print(f"insufficient funds. You only have {player.money}")
-                continue
-            
-            break
-        
-        player.money -= bet
-        return bet
-
-    def print_table(self, end=False):
-        clear()
-        if end:
-            print("---------   END OF HAND  -------")
-
-        print(f"Dealer: ({calculate_blackjack_hand_value(self.dealer_cards)})", end=None)
-        for card in self.dealer_cards:
-            if card.face_down == False:
-                value, color = card.get_value_and_color()
-                print(f"{value} of {color}, ", end=None)
-            else:
-                print("[?]")
-
-        print("")
-        for player in self.players:
-            print(f"{player.name}: ", end=None)
-            for hand in player.hands:
-                print(f"({calculate_blackjack_hand_value(hand)})")
-                for card in hand:
-                    value, color = card.get_value_and_color()
-                    print(f"{value} of {color}, ", end=None)   
-                print("")
-    
-    def get_player_decision(self, player, hand, bet):
-        self.print_table()
-        moves = ["hit", "stand"]
-        if player.money >= bet:
-
-            if len(hand) == 2:
-                if hand[0].get_value() == hand[1].get_value(): 
-                    moves.append("split")
-                elif hand[0].get_value() in ["J","Q","K","10"] and hand[1].get_value() in ["J","Q","K","10"]: 
-                    moves.append("split")
-            
-            if len(hand) == 2:
-                moves.append("double")
-
-
-        while True:
-            print("-------------------")
-            print(f"{player.name} ({calculate_blackjack_hand_value(hand)}): ")
-            for card in hand:
-                value, color = card.get_value_and_color()
-                print(f"{value} of {color}, ", end=None)   
-            print("")
-            
-            for move in moves:
-                print(move, end="  ")
-            print("")
-                
-
-            dec = input("what do you want to do?\n")
-            if dec not in moves:
-                print("Invalid move choice")
-                continue
-            return dec
 
     def play_dealer(self):
         Dealer_stop=17
@@ -272,117 +138,6 @@ class BlackjackGame:
         self.dealer_cards.append(self.shoe.draw_card(face_down=True))
 
     
-    def start_game_cli(self): # plays one hand of BlackJack
-        if len(self.players) == 0:
-            raise ValueError(f"need at least 1 player to start game")
-        
-        playing_players = self.players.copy()
-
-        player_bets = {}
-        for player in self.players:
-            player_bets[player.name] = self.ask_player_for_bet_cli(player)
-        
-        # initial dealing ---------
-        self.deal_initial_cards()
-
-        #ensure all player cards are face up
-        for player in self.players:
-            for hand in player.hands:
-                for card in hand:
-                    card.face_down = False
-
-
-
-        self.print_table()
-        #check if anyone got a blackjack
-        
-        for player in self.players:
-            for hand in player.hands:
-                total = calculate_blackjack_hand_value(hand)
-                if total == 21:                 
-                    payout = math.floor(player.hands[0]['bet'] * PAYOUT_TABLE["blackjack"])
-                    print(f"{player.name} got a blackjack winning {payout}!")
-                    player.money += payout
-                    playing_players.remove(player)
-                    input()
-
-        #play with each player
-        for player in playing_players:
-            self.print_table()
-            
-            for i, hand in enumerate(player.hands):
-                decision = ""
-
-                while True:
-                    decision = self.get_player_decision(player, player.hands[i], player_bets[player.name])
-                    
-                    if decision == "hit":
-                        player.hands[i].append(self.shoe.draw_card(face_down=False))
-
-                        if calculate_blackjack_hand_value(player.hands[i]) >= 21:
-                            break
-
-                    elif decision == "stand": 
-                        break
-
-                    elif decision == "double": 
-                        player.money -= player_bets[player.name]
-                        player_bets[player.name] = player_bets[player.name]*2
-                        player.hands[i].append(self.shoe.draw_card(face_down=False))
-                        break
-
-                    elif decision == "split": 
-                        player.money -= player_bets[player.name]
-                        player.hands.append([player.hands[i][1]])
-                        player.hands[i] = [player.hands[i][0]]
-
-
-        # play the dealer
-        self.play_dealer()
-
-        #check any payouts:
-        dealer_total = calculate_blackjack_hand_value(self.dealer_cards)
-        if dealer_total > 21:
-            for player in playing_players:
-                for hand in player.hands:
-                    if calculate_blackjack_hand_value(hand) <= 21:
-                        payout = math.floor(player_bets[player.name] * PAYOUT_TABLE["normal_win"])
-                        print(f"{player.name} Wins {payout}")
-                        player.money += payout
-        else:
-            for player in playing_players:
-                for hand in player.hands:
-                    hand_value = calculate_blackjack_hand_value(hand)
-
-                    if hand_value > 21:
-                        continue
-
-                    if hand_value > dealer_total:
-                        payout = math.floor(player_bets[player.name] * PAYOUT_TABLE["normal_win"])
-                        print(f"{player.name} Wins {payout}")
-                        player.money += payout
-                    
-                    elif hand_value == dealer_total:
-                        payout = math.floor(player_bets[player.name] * PAYOUT_TABLE["draw"])
-                        print(f"{player.name} matched the dealer. draw payout: {payout}")
-                        player.money += payout
-                    
-                    time.sleep(1)
-                       
-        
-        #save players to file:
-        for player in self.players:
-            save_player_to_file(player)
-        
-        self.players = []
-        self.dealer_cards = []
-
-        for card in self.shoe.cards: # turn over any cards that might be face down in the deck
-            if card.face_down:
-                card.face_down = False
-
-        input()
-
     async def play_dealer_discord(self, ctx):
         Dealer_stop=17
         
@@ -431,7 +186,6 @@ class BlackjackGame:
                     playing_players.remove(player)
 
 
-            
 
         # play with each player
         for player in playing_players:
@@ -510,7 +264,7 @@ class BlackjackGame:
         
         #save players to file:
         for player in self.players:
-            save_player_to_file(player)
+            player.save_player_to_file(player)
         
 
     async def send_bj_table_to_discord(self, ctx):
@@ -583,15 +337,3 @@ class BlackjackGame:
             
         await message.delete()
         return action    
-
-
-
-
-#game = BlackjackGame()
-#while True:
-#    game.add_player_to_game(load_player_from_file("Igor"))
-#    game.add_player_to_game(load_player_from_file("Miłosz"))
-#    game.add_player_to_game(load_player_from_file("Patryk"))
-#    game.add_player_to_game(load_player_from_file("Kuba"))
-#   game.start_game_cli()
-

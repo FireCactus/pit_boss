@@ -4,6 +4,8 @@ from env import token
 import asyncio
 
 import blackjack as bj
+import game_player as player
+
 
 intents = discord.Intents.default()
 intents.message_content = True  # Enable the message content intent
@@ -27,14 +29,40 @@ info_delete_after_seconds = 15
 
 def init_player(user):
     try:
-        player = bj.load_player_from_file(user)
+        player = player.load_player_from_file(user)
     except:
-        player = bj.BlackjackPlayer(user, starting_money)
-        bj.save_player_to_file(player)
+        player = player.BlackjackPlayer(user, starting_money)
+        player.save_player_to_file(player)
+
+def init_bet_size_table(players):
+    for player in players:
+        #check if player has a bet, if not set to minimal 
+        if player.name not in bet_size_table.keys():
+            bet_size_table[player.name] = min_bet
+
+        # if a player entered a game with a bet that is bigger than their balance, change their bet to minimal
+        elif player.money < bet_size_table[player.name]:
+            await ctx.send(f"{user}, Your bet was set at {bet_size_table_game[player.name]} but you only have {player.money}\nSetting your bet at the minimum ({min_bet})",delete_after=info_delete_after_seconds)
+            bet_size_table[player.name] = min_bet
+
+
+@bot.command("roulette")
+async def roulette_start(ctx):
+    
+    user = str(ctx.message.author)
+    init_player(user)
+    await ctx.message.delete()
+
+
+
+
 
 @bot.command("help")
 async def help(ctx):
+    user = str(ctx.message.author)
     await ctx.message.delete()
+
+
 
     string = f"!daily -> Gives you a daily reward of {daily_reward} (renewable at midnight)\n"
     string += f"!balance -> Returns your current balance\n"
@@ -53,7 +81,7 @@ async def change_bet_to_max(ctx, arg_1, ):
         user = str(ctx.message.author)
 
         init_player(user)
-        player = bj.load_player_from_file(user)    
+        player = player.load_player_from_file(user)    
 
         await ctx.message.delete()
 
@@ -74,7 +102,7 @@ async def change_bet_to_max(ctx):
     user = str(ctx.message.author)
 
     init_player(user)
-    player = bj.load_player_from_file(user)    
+    player = player.load_player_from_file(user)    
 
     await ctx.message.delete()
 
@@ -85,7 +113,7 @@ async def change_bet_to_max(ctx):
     player.received_daily = True
     player.money += daily_reward
 
-    bj.save_player_to_file(player)
+    player.save_player_to_file(player)
     await ctx.send(f"{player.name} received their daily reward! {daily_reward} added to balance",delete_after=info_delete_after_seconds)
 
 
@@ -97,7 +125,7 @@ async def change_player_bet(ctx, arg_1, arg_2):
         await ctx.message.delete()
 
         init_player(user)
-        player = bj.load_player_from_file(user)    
+        player = player.load_player_from_file(user)    
     
         try:
             arg_2 = int(arg_2)
@@ -123,7 +151,7 @@ async def transfer_money(ctx, arg_1, arg_2):
     init_player(user)
 
     
-    from_user =  bj.load_player_from_file(user)
+    from_user =  player.load_player_from_file(user)
     to_user = arg_1
     try:
         amount = int(arg_2)
@@ -131,13 +159,13 @@ async def transfer_money(ctx, arg_1, arg_2):
         await ctx.send(f"{arg_2} is an invalid amount",delete_after=info_delete_after_seconds)
     
     player_names = []
-    for player in bj.load_all_players():
+    for player in player.load_all_players():
         player_names.append(player.name)
     
     if to_user not in player_names:
         await ctx.send(f"No such User as {to_user}",delete_after=info_delete_after_seconds)
     else:
-        to_user = bj.load_player_from_file(to_user)
+        to_user = player.load_player_from_file(to_user)
     
     if to_user.name == from_user.name:
         await ctx.send(f"You can't send money to yourself",delete_after=info_delete_after_seconds)
@@ -154,8 +182,8 @@ async def transfer_money(ctx, arg_1, arg_2):
         to_user.money += amount
         await ctx.send(f"Transferred {amount} from {from_user.name} to {to_user.name}",delete_after=info_delete_after_seconds)
 
-        bj.save_player_to_file(from_user)
-        bj.save_player_to_file(to_user)
+        player.save_player_to_file(from_user)
+        player.save_player_to_file(to_user)
 
         
 
@@ -165,11 +193,11 @@ async def get_user_balance(ctx, arg_1=None):
     await ctx.message.delete()
     
     init_player(user)
-    player = bj.load_player_from_file(user)   
+    player = player.load_player_from_file(user)   
  
     if arg_1 == "all":
         string = "---- All players money ----\n"
-        for player in bj.load_all_players():
+        for player in player.load_all_players():
             string += f"{player.name}   {player.money}\n--------------------\n"
         await ctx.send(string,delete_after=info_delete_after_seconds)
     else:
@@ -205,11 +233,7 @@ async def start_blackjack_game(ctx):
     bj_players = []
 
     for user in users_playing_bj:
-        try:
-            player = bj.load_player_from_file(user)
-        except:
-            player = bj.BlackjackPlayer(user, starting_money)
-            bj.save_player_to_file(player)
+        init_player(user)
 
         if player.money >= min_bet:
             bj_players.append(player)
@@ -221,14 +245,7 @@ async def start_blackjack_game(ctx):
         return None
     
     #initialize bet table
-    for player in users_playing_bj:
-        if player not in bet_size_table.keys():
-            bet_size_table[player] = min_bet
-    
-    for player in bj_players:
-        if player.money < bet_size_table[player.name]:
-            await ctx.send(f"{user}, Your bet was set at {bet_size_table_game[player.name]} but you only have {player.money}\nSetting your bet at the minimum ({min_bet})",delete_after=info_delete_after_seconds)
-            bet_size_table[player.name] = min_bet
+    init_bet_size_table(bj_players)
 
     game = bj.BlackjackGame()
 
@@ -251,5 +268,5 @@ async def start_blackjack_game(ctx):
     
     
 
-
-bot.run(token)
+if __name__ == "__main__":
+    bot.run(token)
