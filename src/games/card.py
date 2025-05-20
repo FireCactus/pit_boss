@@ -21,8 +21,6 @@ permitted_colors = [
 "Clubs"
 ]
 
-
-
 class Card:
     def __init__(self, Value, Color, face_down=False):
         

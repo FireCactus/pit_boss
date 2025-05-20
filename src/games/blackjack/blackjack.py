@@ -1,6 +1,6 @@
-from card_deck import Deck
-from card import Card
-import game_player as g_player
+from games.card_deck import Deck
+from games.card import Card
+from games import game_player as g_player
 
 import math
 import time
@@ -11,7 +11,6 @@ stand_reaction = "❌"
 hit_reaction = "👆"
 split_reaction = "↔️"
 double_reaction = "🔥"
-
 
 DECKS_IN_PLAY = 6 # how many decks in the shoe
 PLAYER_STARTER_MONEY = 100
@@ -24,7 +23,6 @@ PAYOUT_TABLE={
 
 delete_after_seconds = 60
     
-
 def calculate_blackjack_hand_value(cards):
 
         try:

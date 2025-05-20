@@ -1,18 +1,26 @@
 import discord
-from discord.ext import commands
-from env import token
 import asyncio
+from discord.ext import commands
 
-import blackjack as bj
-import game_player as g_player
+from dotenv import load_dotenv
+import os
 
-import roulette as rlt
+from games import game_player as g_player
 
+from games.blackjack import blackjack as bj 
+from games.roulette import roulette as rlt
 
+#load .env file
+load_dotenv(dotenv_path="etc/.env")
+
+#initialize bot
 intents = discord.Intents.default()
 intents.message_content = True  # Enable the message content intent
 intents.messages = True
 intents.guilds = True
+
+bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
+
 
 start_game_in = 6
 
@@ -22,12 +30,9 @@ min_bet = 25
 max_bet = 1000
 daily_reward = 75
 
-
-bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
 bet_size_table = {}
 delete_after_seconds = 60
 info_delete_after_seconds = 15
-
 
 odd_reaction = "1️⃣"
 even_reaction = "2️⃣"
@@ -37,6 +42,8 @@ green_reaction = "🟩"
 
 roulette_reactions = [green_reaction, black_reaction, red_reaction, even_reaction, odd_reaction]
 
+
+WESKER_GIF = "media/wesker-no-wesker-no-no.gif"
 
 def init_player(user):
     try:
@@ -56,8 +63,6 @@ async def init_bet_size_table(ctx, players):
         elif player.money < bet_size_table[player.name]:
             await ctx.send(f"{player.name}, Your bet was set at {bet_size_table[player.name]} but you only have {player.money}\nSetting your bet at the minimum ({min_bet})",delete_after=info_delete_after_seconds)
             bet_size_table[player.name] = min_bet
-            
-
 
 @bot.command("roulette")
 async def roulette_start(ctx):
@@ -127,10 +132,6 @@ async def roulette_start(ctx):
 
     #start game
     await game.start_game_discord(ctx, bet_size_table_game)
-
-
-
-
 
 @bot.command("help")
 async def help(ctx):
@@ -250,7 +251,7 @@ async def transfer_money(ctx, arg_1, arg_2):
     if amount > from_user.money:
         await ctx.send(f"Insufficient money! You only have {from_user.money}",delete_after=info_delete_after_seconds)
     elif amount < 0:
-        with open('wesker-no-wesker-no-no.gif', 'rb') as f:
+        with open(WESKER_GIF, 'rb') as f:
             gif = discord.File(f)
             await ctx.send(file=gif)
     else:
@@ -342,8 +343,5 @@ async def start_blackjack_game(ctx):
     await asyncio.sleep(4)
     await start_blackjack_game(ctx) # start game again!
 
-    
-    
-
 if __name__ == "__main__":
-    bot.run(token)
+    bot.run(os.getenv("DISCORD_BOT_TOKEN"))

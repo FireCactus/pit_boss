@@ -1,6 +1,6 @@
 import yaml
 
-PLAYER_FILE_NAME="players.yaml"
+PLAYER_FILE_NAME="datahub/players.yaml"
 
 
 class GamePlayer:
@@ -13,16 +13,6 @@ class GamePlayer:
         self.roulette_pick_color = None  # string value - red, black, green
         self.roulette_pick_number = None  # string value - odd, even
         self.dealer_cards = []
-
-
-
-
-def renew_all_dailies():
-    players = load_all_players()
-
-    for player in players:
-        player.received_daily=False
-        save_player_to_file(player)
 
 
 def load_all_players():

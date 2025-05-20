@@ -1,4 +1,4 @@
-from card import Card, permitted_colors, permitted_values
+from games.card import Card, permitted_colors, permitted_values
 import random
 
 Normal_suite_values = permitted_values

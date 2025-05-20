@@ -1,4 +1,4 @@
-import game_player as g_player
+from games import game_player as g_player
 
 import discord
 import asyncio
