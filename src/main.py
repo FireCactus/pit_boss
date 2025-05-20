@@ -191,7 +191,7 @@ async def change_bet_to_max(ctx):
     player.money += daily_reward
 
     g_player.save_player_to_file(player)
-    await ctx.send(f"{player.name} received their daily reward! {daily_reward} added to balance",delete_after=info_delete_after_seconds)
+    await ctx.send(f"{player.name} received their daily reward! {daily_reward} added to balance")
 
 
 
