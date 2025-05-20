@@ -1,0 +1,34 @@
+############## FEATURES TO IMPLEMENT
+    - Slots! (Mikołaj) 
+    - Lotto!
+    - Scratch off tickets! (Igor)
+    - Wheel of fortune!
+
+    -daily minigames to earn money rock paper scissors, coin toss
+
+    - SQLite database instead of players.yaml
+    - Trigger renew daily reward at midnight
+    - Implement player data (scores, winsm loses)
+    - Implement achievements (win 5 hands of bj in row, etc.)
+
+    -Przepisanie systemu płatnosci
+
+############## BUGS TO FIX 
+    - In blackjack the player and/or the dealer can get face down cards duting initial deal.
+    - In roulette you can bet with 0$
+
+############## IDEAS FOR FUTURE
+
+    - losowe zdjecie do identyfikacji - piersza osoba ktora zgadnie co to/kto to dostaje prize
+
+    - System wyzywania ludzi !all in i zgarnianie puli -> once a week
+    - SYSTEM DO Z A R A B I A N I A 
+    - Happy hour losowo 30 minutowe okienko gdzie wszystkie bety x1.5
+    - System questow
+    - lokaty
+    - loot boxy
+    - If a player hasn’t played in 24h, they get a "welcome back" bonus 
+    - XP system that goes both ways - you start at zero and either move up or down(good/bad gambler, ROI rate, )
+    - stock market
+    - Bank Heist Minigame (MMO EVENT)
+    - sklep

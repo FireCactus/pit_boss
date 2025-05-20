@@ -8,6 +8,7 @@ repo structure:
     media - images, gifs, videos
     etc - env files
     datahub - databases with player data
+    staticly typed code!!!!
     
 
 
