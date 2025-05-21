@@ -1,0 +1,82 @@
+from abc import ABC, abstractmethod
+from typing import NamedTuple, Optional
+from statistics import mean 
+import random
+
+class TicketPayoutRank(NamedTuple):
+    rank: int 
+    win_amount: int
+    probability: float
+
+class ScratchOffField(NamedTuple):
+    label: str
+    potential_win: int
+    scratched: bool = False
+
+class ScratchOffTicket(ABC):
+    _field_quantity: int
+    _price: int
+    _name: str
+    _ranks: tuple[TicketPayoutRank]
+    _rank: TicketPayoutRank
+    _fields: list[ScratchOffField]
+    _scratched : bool
+    _winning_num: int 
+
+
+    def __init__(self) -> None:
+        self._rank = self._decide_ticket_rank()
+        self._scratched = False
+
+    def get_price(self) -> int:
+        return self._price
+
+
+    def _decide_ticket_rank(self) -> TicketPayoutRank:
+
+        rank_identifier = random.random() # 0...1
+        current_rank: float = 0
+        
+        for rank in self._ranks:
+            current_rank += rank.probability
+            if rank_identifier <= current_rank:
+                return rank
+
+    def get_expected_value(self) -> int:
+        
+        total_value = 0
+        for rank in self._ranks:
+            total_value += rank.probability * rank.win_amount
+        
+        return total_value
+
+    def scratch(self) -> Optional[int]:
+        '''
+            returns the win amuont of the scratcher and marks it as scratched
+        '''
+        if self._scratched:
+            return None
+
+        self._scratched = True
+        return self._rank.win_amount
+
+    @abstractmethod
+    def _generate_fields(self) -> None:
+        '''
+            generate the fields in the scratcher
+        '''      
+        pass
+
+
+
+
+    def __repr__(self) -> str:
+        string = ""
+        for i, field in enumerate(self._fields):
+            string += f"{field.label} "
+            if i == 8:
+                string += '\n'
+        return string
+
+        
+

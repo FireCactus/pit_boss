@@ -109,23 +109,20 @@ class BlackjackGame:
         # give each player a card
         for player in self.players:
             card = self.shoe.draw_card(face_down=False)
-            card.face_down = False #ensure it is face down
 
             player.hands = [] # clear player hands 
             hand = {'bet':player_bets[player.name],
-                    "cards":[card]
-                    }
+                    'cards':[card]
+                    }        
             player.hands.append(hand)
 
         # give the dealer a card
         card = self.shoe.draw_card(face_down=False)
-        card.face_down = False #ensure it is face down
         self.dealer_cards.append(card)
 
         # give the players their second card
         for player in self.players:
             card = self.shoe.draw_card(face_down=False)
-            card.face_down = False #ensure it is face down
 
             player.hands[0]['cards'].append(card)
         
@@ -168,7 +165,7 @@ class BlackjackGame:
         # initial dealing ---------
         self.deal_initial_cards(player_bets)
 
-        
+
         # check if anyone got a blackjack
         playing_players = self.players.copy()
         for player in self.players:
@@ -180,6 +177,13 @@ class BlackjackGame:
                     player.money += payout
                     playing_players.remove(player)
 
+        ##################### ULTIMATE FIX FOR BUG 
+        for player in playing_players:
+            for hand in player.hands:
+                for card in hand['cards']:
+                    card.face_down = False 
+        self.dealer_cards[0].face_down = False
+        ############################################
 
 
         # play with each player
