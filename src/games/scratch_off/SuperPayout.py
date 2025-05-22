@@ -60,12 +60,5 @@ class SuperPayout(ScratchOffTicket):
         return fields
 
         
-    
-
-
-ticket = SuperPayout()
-print(ticket.get_expected_value())
-print(ticket)
-print(ticket._winning_num, ticket._rank.rank)
 
   

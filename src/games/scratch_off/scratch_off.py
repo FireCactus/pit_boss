@@ -10,7 +10,7 @@ class TicketPayoutRank(NamedTuple):
 
 class ScratchOffField(NamedTuple):
     label: str
-    potential_win: int
+    potential_win: Optional[int] = None
     scratched: bool = False
 
 class ScratchOffTicket(ABC):
@@ -25,6 +25,8 @@ class ScratchOffTicket(ABC):
 
 
     def __init__(self) -> None:
+
+        self.check_if_ticket_probabilites_are_valid()
         self._rank = self._decide_ticket_rank()
         self._scratched = False
 
@@ -41,6 +43,17 @@ class ScratchOffTicket(ABC):
             current_rank += rank.probability
             if rank_identifier <= current_rank:
                 return rank
+
+    def check_if_ticket_probabilites_are_valid(self) -> None:
+        '''
+        check if all probabilities add up to 1
+        '''
+        total = 0
+        for rank in self._ranks:
+            total += rank.probability
+
+        assert total >= 1 and total <= 1.000000002, f"The Ticket probabilities do NOT add up to 1 but {total}"
+        # floating point math fix
 
     def get_expected_value(self) -> int:
         
