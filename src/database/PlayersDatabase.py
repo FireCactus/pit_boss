@@ -1,5 +1,6 @@
 from typing import *
 import sqlite3
+import datetime
 
 from database.Database import Database
 from utils.Loc import Loc
@@ -66,3 +67,45 @@ class PlayersDatabase(Database):
         self._cursor.execute(query, (player,))
         rows = self._cursor.fetchall()
         return [Item(*row) for row in rows]
+    
+    def get_player_balance(self, player: str) -> int:
+        query = """
+            SELECT 
+                balance
+            FROM 
+                players
+            WHERE 
+                username = ?;
+        """
+        self._cursor.execute(query, (player,))
+        result = self._cursor.fetchone()
+        return result
+    
+    def update_player_balance(self, player: str, amount: int) -> None:
+        query = """
+            UPDATE players
+            SET balance = balance + ?
+            WHERE username = ?;
+        """
+        self._cursor.execute(query, (amount, player))
+        self._connection.commit()
+
+    def add_new_player(self, player: str):
+
+
+        query = """
+            INSERT INTO PLAYERS (username, balance, received_daily, exp, title, last_interaction_time)
+        VALUES (?, ?, ?, ?, ?, ?);
+        """
+        self._cursor.execute(query, (
+            player,
+            500,
+            False,
+            0,
+            "xyz",
+            datetime.now().isoformat()
+        ))
+        self._connection.commit()
+
+db = PlayersDatabase()
+
