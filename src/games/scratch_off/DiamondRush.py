@@ -4,7 +4,7 @@ from scratch_off import TicketPayoutRank, ScratchOffField
 '''
 Basic scratch off ticket with the structure:
 -------------------------------------
-if all 3 characters match - you win
+if all 4 characters match - you win
  [a]- 15       []  []  []  [] 
  [b] - 20      []  []  []  []
  [c] - 35      []  []  []  []
@@ -17,6 +17,7 @@ if all 3 characters match - you win
 class DiamondRush(EmojiLines):
     _price = 55
     _name = "Diamond rush"
+    _description = "if all 4 emojis in a row are the same you win!"
     _ranks = (
         TicketPayoutRank(rank=8, win_amount=0, probability=0.15),
         TicketPayoutRank(rank=7, win_amount=10, probability=0.15),
@@ -39,8 +40,7 @@ class DiamondRush(EmojiLines):
         }
     _fields_per_row = 4
     _row_amount = 4
-    _field_quantity=_fields_per_row*_row_amount
-
-    def __init__(self):
+    
+    def __init__(self) -> None:
         super().__init__()
         self._fields = self._generate_fields()
