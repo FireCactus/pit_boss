@@ -11,14 +11,15 @@ class TableColumnScheme(NamedTuple):
     type: str
     relation: Optional[str]
 
-class InvalidBlueprint(Exception):
-    pass
-
 class TableScheme(NamedTuple):
     name: str
     columns: List[TableColumnScheme]
 
-DatabaseScheme = List[TableScheme]
+class DatabaseScheme(NamedTuple):
+    tables: List[TableScheme]
+
+class InvalidBlueprint(Exception):
+    pass
 
 @final
 class BlueprintCompiler:
@@ -26,14 +27,14 @@ class BlueprintCompiler:
     __blueprint_path: Final[str] = Loc.src("database", "blueprints")
 
     def database_scheme_from_blueprints(self, database_name: str) -> DatabaseScheme:
-        ptb: DatabaseScheme = []
+        tables: List[TableScheme] = []
 
         for blueprint in Files.all_files_in_dir(os.path.join(self.__blueprint_path, database_name)):
-            ptb.append(self.__parse_table_blueprint(blueprint))
+            tables.append(self.__parse_table_blueprint(blueprint))
 
-        return ptb
-
-
+        return DatabaseScheme(tables)
+        
+        
     def __parse_table_blueprint(self, file_path: str) -> TableScheme:
         with open(file_path, 'r', encoding='utf-8') as f:
             lines: List[str] = f.readlines()
