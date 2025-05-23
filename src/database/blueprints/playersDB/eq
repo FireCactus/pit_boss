@@ -1,4 +1,4 @@
 #COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
 id                      INTEGER         "PRIMARY KEY"
-player_id               INTEGER                                 players(id)
+player_id               INTEGER         ""                      players(id)
 item_id                 INTEGER

@@ -9,20 +9,20 @@ from utils.Files import Files
 from utils.Singleton import Singleton
 
 
-class Database(ABC, metaclass=Singleton):
+class Database(metaclass=Singleton):
 
-    __name: str
+    _name: str
     _cursor: sqlite3.Cursor
 
     def __init__(self, name: str) -> None:
-        self.__name = name
+        self._name = name
         Files.create_dir_if_not_exist(Loc.datahub())
-        self._cursor = sqlite3.connect(f"{Loc.datahub(self.__name)}.db").cursor()
+        self._cursor = sqlite3.connect(f"{Loc.datahub(self._name)}.db").cursor()
         self.sanity_check()
 
 
     def sanity_check(self) -> None:
-        db_scheme: DatabaseScheme = BlueprintCompiler().database_scheme_from_blueprints(self.__name)
+        db_scheme: DatabaseScheme = BlueprintCompiler().database_scheme_from_blueprints(self._name)
         self.__synchronize(db_scheme)
 
 
@@ -33,6 +33,7 @@ class Database(ABC, metaclass=Singleton):
         for table in loaded_scheme.tables:
             current = existing_tables.get(table.name)
             if current == None:
+                print(self.__generate_create_sql(table))
                 self._cursor.execute(self.__generate_create_sql(table))
             elif not self.__compare_tables(current, table):
                 self.__rebuild_table( current, table)
@@ -42,7 +43,6 @@ class Database(ABC, metaclass=Singleton):
 
 
     def __load_current_schema(self) -> Dict[str, TableScheme]:
-
         self._cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
         
         tables: Dict[str, TableScheme] = {}
@@ -55,12 +55,25 @@ class Database(ABC, metaclass=Singleton):
 
             self._cursor.execute(f"PRAGMA foreign_key_list({name});")
             foreign_keys = {row[3]: row[2] for row in self._cursor.fetchall()}
-            
+
             columns = []
             for col in col_info:
-                col_name, col_type = col[1], col[2]
+                col_name = col[1]
+                col_type = col[2]
+
+                # Restrictions: "PRIMARY KEY", "NOT NULL", "DEFAULT xyz"
+                restricions_parts = []
+                if col[5]:  # col[5] = pk (1 jeśli klucz główny)
+                    restricions_parts.append("PRIMARY KEY")
+                if col[3]:  # col[3] = notnull (1 jeśli NOT NULL)
+                    restricions_parts.append("NOT NULL")
+                if col[4] is not None:  # col[4] = default_value
+                    restricions_parts.append(f"DEFAULT {col[4]}")
+
+                restricions = " ".join(restricions_parts) if restricions_parts else None
+
                 relation = foreign_keys.get(col_name)
-                columns.append(TableColumnScheme(col_name, col_type, relation))
+                columns.append(TableColumnScheme(col_name, col_type, restricions, relation))
 
             tables[name] = TableScheme(name, columns)
 
@@ -94,7 +107,7 @@ class Database(ABC, metaclass=Singleton):
             column_defs.append(col_def)
 
             if col.relation != None:
-                foreign_keys.append(f"FOREIGN KEY({col.name}) REFERENCES {col.relation})")
+                foreign_keys.append(f"FOREIGN KEY({col.name}) REFERENCES {col.relation}")
 
         all_defs = column_defs + foreign_keys
         joined_defs = ",\n  ".join(all_defs)

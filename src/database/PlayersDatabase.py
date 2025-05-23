@@ -25,7 +25,7 @@ class PlayersDatabase(Database):
     
     def __init__(self) -> None:
         super().__init__(name="playersDB")
-        self._cursor = sqlite3.connect(f"{Loc.datahub(self.__name)}.db").cursor()
+        self._cursor = sqlite3.connect(f"{Loc.datahub(self._name)}.db").cursor()
 
     def player_statistics(self, player: str) -> Optional[PlayerStatistics]:
         query = """
@@ -66,7 +66,3 @@ class PlayersDatabase(Database):
         self._cursor.execute(query, (player,))
         rows = self._cursor.fetchall()
         return [Item(*row) for row in rows]
-
-    
-
-db = PlayersDatabase()
