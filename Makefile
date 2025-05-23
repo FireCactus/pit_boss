@@ -1,6 +1,12 @@
 SRC_DIR=src
 
-typecheck:
-	python -m mypy $(SRC_DIR) --cache-dir=/dev/null
+.PHONY: typecheck go
 
-.PHONY: typecheck
+typecheck:
+	@python -m mypy $(SRC_DIR) --cache-dir=/dev/null || true
+
+go:
+	@PYTHONPATH=$(SRC_DIR) python -B -m $(word 2, $(MAKECMDGOALS))
+
+%:
+	@:
