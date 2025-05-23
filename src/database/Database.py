@@ -81,13 +81,25 @@ class Database(ABC, metaclass=Singleton):
 
 
     def __generate_create_sql(self, table: TableScheme) -> str:
-        columns_sql = []
+        column_defs: List[str] = []
+        foreign_keys: List[str] = []
+
         for col in table.columns:
+
             col_def = f"{col.name} {col.type}"
-            if col.relation:
-                col_def += f" REFERENCES {col.relation}"
-            columns_sql.append(col_def)
-        return f"CREATE TABLE {table.name} ({', '.join(columns_sql)});"
+
+            if col.restricions:
+                col_def += f" {col.restricions}"
+
+            column_defs.append(col_def)
+
+            if col.relation != None:
+                foreign_keys.append(f"FOREIGN KEY({col.name}) REFERENCES {col.relation})")
+
+        all_defs = column_defs + foreign_keys
+        joined_defs = ",\n  ".join(all_defs)
+
+        return f"CREATE TABLE {table.name} (\n  {joined_defs}\n);"
 
 
     def __rebuild_table(self, current: TableScheme, expected: TableScheme) -> None:
