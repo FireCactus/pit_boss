@@ -1,14 +1,9 @@
-from typing import Type, TypeVar, Generic
+from typing import *
 
-T = TypeVar("T")
+class Singleton(type):
+    _instances: Dict[Any, Any] = {}
 
-
-class Singleton(Generic[T]):
-    def __init__(self, cls: Type[T]):
-        self._cls = cls
-        self._instance: T | None = None
-
-    def __call__(self, *args, **kwargs) -> T:
-        if self._instance is None:
-            self._instance = self._cls(*args, **kwargs)
-        return self._instance
+    def __call__(cls, *args, **kwargs) -> Any:
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
