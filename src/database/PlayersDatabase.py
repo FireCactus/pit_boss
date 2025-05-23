@@ -25,10 +25,9 @@ class PlayersDatabase(Database):
     
     def __init__(self) -> None:
         super().__init__(name="playersDB")
-<<<<<<< HEAD
         self._cursor = sqlite3.connect(f"{Loc.datahub(self.__name)}.db").cursor()
 
-    def player_statistics(self, player: str) -> PlayerStatistics:
+    def player_statistics(self, player: str) -> Optional[PlayerStatistics]:
         query = """
             SELECT 
                 S.current_lose_streak,
@@ -71,5 +70,3 @@ class PlayersDatabase(Database):
     
 
 db = PlayersDatabase()
-=======
->>>>>>> 3abcbb7 (database: sainity check done)

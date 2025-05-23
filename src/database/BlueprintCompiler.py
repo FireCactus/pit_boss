@@ -9,6 +9,7 @@ from utils.Files import Files
 class TableColumnScheme(NamedTuple):
     name: str
     type: str
+    restricions: Optional[str]
     relation: Optional[str]
 
 class TableScheme(NamedTuple):
@@ -39,8 +40,6 @@ class BlueprintCompiler:
         with open(file_path, 'r', encoding='utf-8') as f:
             lines: List[str] = f.readlines()
 
-        pattern = re.compile(r'(\S+)\s+(\S+)(?:\s+(\S+))?')
-
         cols: List[TableColumnScheme] = []
 
         for line in lines:
@@ -48,13 +47,17 @@ class BlueprintCompiler:
             if not line or line.startswith('#'):
                 continue
 
-            match = pattern.match(line)
-            if match:
-                column: str = match.group(1)
-                col_type: str = match.group(2)
-                relations: Optional[str] = match.group(3) if match.group(3) else None
-                cols.append(TableColumnScheme(column, col_type, relations))
-            else:
-                raise InvalidBlueprint(f"Invalid database table blueprint: {file_path}")
+            parts = re.split(r'\s{2,}', line)
 
-        return TableScheme(name=os.path.basename(file_path), columns=cols)
+            if len(parts) < 2:
+                raise InvalidBlueprint(f"Invalid blueprint line in: {file_path} → '{line}'")
+
+            name = parts[0]
+            col_type = parts[1]
+            restrictions = parts[2].strip('"') if len(parts) > 2 and parts[2] else None
+            relation = parts[3] if len(parts) > 3 and parts[3] else None
+
+            cols.append(TableColumnScheme(name, col_type, restrictions, relation))
+
+        table_name = os.path.splitext(os.path.basename(file_path))[0]
+        return TableScheme(name=table_name, columns=cols)
