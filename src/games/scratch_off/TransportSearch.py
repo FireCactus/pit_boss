@@ -17,6 +17,7 @@ Basic scratch off ticket with the structure:
 class TransportSearch(ScratchOffTicket):
     _price = 50
     _name = "Transport search"
+    _description = "Each set of 3 winning transport emojis wins a prize!"
     _ranks = ( 
         TicketPayoutRank(rank=13, win_amount=0,    probability=0.25), 
         TicketPayoutRank(rank=12, win_amount=5,    probability=0.1),  # 1x5
@@ -60,42 +61,41 @@ class TransportSearch(ScratchOffTicket):
 
     _fields_per_row = 6
     _row_amount = 6
-    _field_quantity=_fields_per_row*_row_amount
-    _how_many_fields_to_win = 3
+    _how_many_same_fields_to_win: int = 3
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._fields = self._generate_fields()
 
 
     def _generate_fields(self) -> list[ScratchOffField]:
-        fields = []
+        fields: list[ScratchOffField] = []
     
         #add the winning emojis first
-        remaining_win_to_add = self._rank.win_amount
+        remaining_win_to_add: int = self._rank.win_amount
         while remaining_win_to_add > 0:
             for money, emoji in self._paying_emojis.items():
                 if remaining_win_to_add >= money:
                     remaining_win_to_add -= money
-                    for _ in range(self._how_many_fields_to_win): 
+                    for _ in range(self._how_many_same_fields_to_win): 
                         fields.append(ScratchOffField(label=emoji))
                     break
                     
         
         #generate the rest of the emojis
-        remaining_fields = (self._fields_per_row * self._row_amount) - len(fields)
+        remaining_fields: int = (self._fields_per_row * self._row_amount) - len(fields)
         for _ in range(remaining_fields):
             emoji = random.choice(self._possible_emojis)
 
             if emoji in self._paying_emojis.values():
-                #check if we can add that emoji (has to be less than self._how_many_fields_to_win)
-                emoji_count = [field.label for field in fields].count(emoji)
-                if emoji_count % self._how_many_fields_to_win == self._how_many_fields_to_win -1:
+                #check if we can add that emoji (has to be less than self._how_many_same_fields_to_win)
+                emoji_count: int = [field.label for field in fields].count(emoji)
+                if emoji_count % self._how_many_same_fields_to_win == self._how_many_same_fields_to_win -1:
                     self._possible_emojis.remove(emoji)
                     emoji = random.choice(self._possible_emojis)
 
             fields.append(ScratchOffField(label=emoji))
 
         #shuffle the list and return
-        #random.shuffle(fields)
+        random.shuffle(fields)
         return fields
