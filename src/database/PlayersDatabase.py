@@ -7,3 +7,5 @@ class PlayersDatabase(Database):
 
     def __init__(self) -> None:
         super().__init__(name="playersDB")
+
+db = PlayersDatabase()
