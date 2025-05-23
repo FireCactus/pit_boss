@@ -4,7 +4,7 @@
     - Scratch off tickets! (Igor)
     - Wheel of fortune!
 
-    -daily minigames to earn money rock paper scissors, coin toss
+    -daily minigames to earn money rock paper scissors, coin toss (Milosz)
 
     - SQLite database instead of players.yaml
     - Trigger renew daily reward at midnight
