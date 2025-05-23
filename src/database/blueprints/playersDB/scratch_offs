@@ -1,4 +1,4 @@
-#COLUMN                 #TYPE           #RELATIONS
-id                      INTEGER         PRIMARY_KEY
-player_id               INTEGER
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
+id                      INTEGER         "PRIMARY KEY"
+player_id               INTEGER                                 players(id)
 type                    TEXT

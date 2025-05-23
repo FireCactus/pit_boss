@@ -1,5 +1,5 @@
-#COLUMN                 #TYPE           #RELATIONS
-id                      INTEGER         PRIMARY_KEY
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
+id                      INTEGER         "PRIMARY KEY"
 username                TEXT
 balance                 INTEGER
 received_daily          BOOLEAN

@@ -1,6 +1,6 @@
-#COLUMN                 #TYPE           #RELATIONS
-id                      INTEGER         PRIMARY_KEY
-scratch_off_id          INTEGER
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
+id                      INTEGER         "PRIMARY KEY"
+scratch_off_id          INTEGER                                 scratch_offs(id)
 tickets_bought          INTEGER
 tickets_scratched       INTEGER
 money_won               INTEGER
