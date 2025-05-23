@@ -1,0 +1,4 @@
+#COLUMN                 #TYPE           #RELATIONS
+id                      INTEGER         PRIMARY_KEY
+player_id               INTEGER
+achievement             INTEGER

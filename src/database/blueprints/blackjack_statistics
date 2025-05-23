@@ -1,0 +1,11 @@
+#COLUMN                 #TYPE           #RELATIONS
+id                      INTEGER         PRIMARY_KEY
+natural_blackjacks      INTEGER
+money_lost              INTEGER
+money_won               INTEGER
+current_streak          INTEGER
+highest_lose_streak     INTEGER
+highest_win_streak      INTEGER
+double_down             INTEGER
+hands_won               INTEGER
+hands_lost              INTEGER

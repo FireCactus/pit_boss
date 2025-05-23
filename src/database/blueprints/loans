@@ -1,0 +1,7 @@
+#COLUMN                 #TYPE           #RELATIONS
+id                      INTEGER         PRIMARY_KEY
+loaner                  INTEGER
+loanee                  INTEGER
+amount                  INTEGER
+expire_date             DATETIME
+interest                FLOAT

@@ -1,0 +1,5 @@
+#COLUMN                 #TYPE           #RELATIONS
+id                      INTEGER         PRIMARY_KEY
+player_id               INTEGER
+item_id                 INTEGER
+amount                  INTEGER

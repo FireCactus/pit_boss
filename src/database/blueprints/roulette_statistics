@@ -1,0 +1,17 @@
+#COLUMN                 #TYPE           #RELATIONS
+id                      INTEGER         PRIMARY_KEY
+green_won               INTEGER
+red_won                 INTEGER
+black_won               INTEGER
+even_won                INTEGER
+odd_won                 INTEGER
+green_lost              INTEGER
+red_lost                INTEGER
+black_lost              INTEGER
+even_lost               INTEGER
+odd_lost                INTEGER
+money_lost              INTEGER
+money_won               INTEGER
+current_streak          INTEGER
+highest_lose_streak     INTEGER
+highest_win_streak      INTEGER
