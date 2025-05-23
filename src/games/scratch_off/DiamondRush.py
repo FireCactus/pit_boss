@@ -1,5 +1,5 @@
-from EmojiLines import EmojiLines
-from scratch_off import TicketPayoutRank, ScratchOffField
+from games.scratch_off.EmojiLines import EmojiLines
+from games.scratch_off.ScratchOffTicket import TicketPayoutRank, ScratchOffField
 
 '''
 Basic scratch off ticket with the structure:

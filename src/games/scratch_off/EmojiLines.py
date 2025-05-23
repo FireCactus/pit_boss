@@ -1,4 +1,4 @@
-from scratch_off import ScratchOffTicket, TicketPayoutRank, ScratchOffField
+from games.scratch_off.ScratchOffTicket import ScratchOffTicket, TicketPayoutRank, ScratchOffField
 from typing import Optional
 import random
 '''

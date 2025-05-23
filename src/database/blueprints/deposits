@@ -1,0 +1,6 @@
+#COLUMN                 #TYPE           #RELATIONS
+id                      INTEGER         PRIMARY_KEY
+player_id               INTEGER
+amount                  INTEGER
+end_date                DATETIME
+interest                FLOAT

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from typing import *
 
 class RecurringMinigame(ABC):
     _win_amount: int

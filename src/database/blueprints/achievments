@@ -1,0 +1,6 @@
+#COLUMN                 #TYPE           #RELATIONS
+id                      INTEGER         PRIMARY_KEY
+name                    TEXT
+description             TEXT
+picture                 TEXT
+reward                  TEXT

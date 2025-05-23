@@ -1,0 +1,6 @@
+#COLUMN                 #TYPE           #RELATIONS
+id                      INTEGER         PRIMARY_KEY
+name                    TEXT
+type                    TEXT
+picture                 TEXT
+object                  TEXT
