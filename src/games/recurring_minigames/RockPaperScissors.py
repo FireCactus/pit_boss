@@ -31,6 +31,3 @@ class RockPaperScissors(RecurringMinigame):
         if result == "Scissors" and player_pick == "Rock":
             return "Win"
         assert False
-
-game = RockPaperScissors()
-game._determine_win
