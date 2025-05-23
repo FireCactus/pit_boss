@@ -1,12 +1,13 @@
 from games.recurring_minigames import RecurringMinigame
+from typing import *
 import random
 
 class RockPaperScissors(RecurringMinigame):
-    _options: list[str]
+    _options: List[str]
     def __init__(self) -> None:
         self._options = ["Rock", "Paper", "Scissors"]
         self._win_amount = 150
-        self._refresh_period_seconds = 60 * 60 * 24 * 3
+        self._refresh_period_seconds = 60 * 60 * 24 * 3 # every 3 days
 
     def _determine_win(self, player_pick: str) -> str:
         if player_pick not in self._options:
