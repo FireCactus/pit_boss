@@ -59,11 +59,11 @@ def setup(bot: Bot) -> None:
 
 
     @bot.command("roulette")
-    async def roulette_start(ctx: Context) -> None:
+    async def roulette_start(ctx: Context, started_by_user: bool = True) -> None:
 
         # remove starting message
-        user: str = str(ctx.message.author)
-        await ctx.message.delete()
+        if started_by_user:
+            await ctx.message.delete()
 
         join_message: Message = await ctx.send(f"Spinning roulette table in {start_game_countdown} seconds, place your bets!")
 
@@ -103,8 +103,8 @@ def setup(bot: Bot) -> None:
                 bet: RouletteBet = RouletteBet(name=player.name, bet_amount=player.get_player_bet(), pick=pick)
                 roulette_bets.append(bet)
                 
-
-        await message.delete()  # remove starting message
+        if started_by_user:
+            await message.delete()  # remove starting message
 
         # Check if any player cannot afford the bet they made and make them pay 
         verified_bets: list[RouletteBet] = []
@@ -118,7 +118,8 @@ def setup(bot: Bot) -> None:
 
         if len(verified_bets) == 0:
             await ctx.send("Noone placed a bet :(", delete_after=info_delete_after_seconds)
-
+            return None
+            
         game: RouletteGame = RouletteGame()
 
         # print the bets
@@ -152,16 +153,16 @@ def setup(bot: Bot) -> None:
                 
         await ctx.send(winner_string)
         await asyncio.sleep(5)
-        roulette_start(ctx)
+        await roulette_start(ctx, False)
                 
 
 
     @bot.command("blackjack")
-    async def start_blackjack_game(ctx: Context) -> None:
+    async def start_blackjack_game(ctx: Context, started_by_user: bool = True) -> None:
         
-        # remove starting message
-        user: str = str(ctx.message.author)
-        await ctx.message.delete()
+        if started_by_user:
+            # remove starting message
+            await ctx.message.delete()
 
         join_message: Message = await ctx.send(f"Starting blackjack game in {start_game_countdown} seconds!\nClick the emoji to join")
         await join_message.add_reaction(join_bj_game_reaction)
@@ -191,8 +192,8 @@ def setup(bot: Bot) -> None:
         if len(bj_players) == 0:
             await ctx.send("Noone joined the table :(", delete_after=info_delete_after_seconds)
             return None
-
-        await message.delete()  # remove starting message
+        if started_by_user:
+            await message.delete()  # remove starting message
 
         #play game
         game: BlackjackGame = BlackjackGame(bj_players)
@@ -220,4 +221,4 @@ def setup(bot: Bot) -> None:
                 
         await ctx.send(winner_string)
         await asyncio.sleep(5)
-        roulette_start(ctx)
+        await start_blackjack_game(ctx, False)

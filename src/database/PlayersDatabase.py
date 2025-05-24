@@ -172,7 +172,7 @@ class PlayersDatabase(Database):
                 players
             WHERE username = ?
         """
-        self._cursor.execute(query, player)
+        self._cursor.execute(query, (player,))
         result: list[str] = self._cursor.fetchone()[0]
        
         return result
