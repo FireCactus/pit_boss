@@ -100,7 +100,7 @@ class PlayersDatabase(Database):
             FROM 
                 players
         """
-        self._cursor.execute(query, (player,))
+        self._cursor.execute(query)
         result: list[str] = self._cursor.fetchall()
         
         if player in result:
@@ -113,8 +113,8 @@ class PlayersDatabase(Database):
 
 
         query: str= """
-            INSERT INTO PLAYERS (username, balance, received_daily, exp, title, last_interaction_time)
-        VALUES (?, ?, ?, ?, ?, ?);
+            INSERT INTO PLAYERS (username, balance, received_daily, exp, title, last_interaction_time, bet)
+        VALUES (?, ?, ?, ?, ?, ?, ?);
         """
         self._cursor.execute(query, (
             player,
@@ -122,7 +122,8 @@ class PlayersDatabase(Database):
             False,
             0,
             self._starting_gambler_title,
-            datetime.now().isoformat()
+            datetime.now().isoformat(),
+            25
         ))
         self._connection.commit()
     
@@ -147,6 +148,42 @@ class PlayersDatabase(Database):
         """
         self._cursor.execute(query, (amount, player))
         self._connection.commit()
+    
+    def get_all_players(self) -> list[str]:
+        query: str= """
+            SELECT 
+                username
+            FROM 
+                players
+        """
+        self._cursor.execute(query)
+        result: list[str] = self._cursor.fetchall()
+       
+        return result
+    
+    def check_if_player_received_daily(self, player: str) -> bool:
+        query: str= """
+            SELECT 
+                received_daily  
+            FROM 
+                players
+            WHERE username = ?
+        """
+        self._cursor.execute(query, player)
+        result: list[str] = self._cursor.fetchone()
+       
+        return result
+    
+    def change_player_received_daily(self, player: str, value: bool) -> None:
+        query: str= """
+            UPDATE players
+            SET received_daily = ?
+            WHERE username = ?;
+        """
 
+        self._cursor.execute(query, (value, player))
+        self._connection.commit()
+    
+       
 
 

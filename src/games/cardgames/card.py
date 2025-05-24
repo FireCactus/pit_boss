@@ -1,4 +1,5 @@
-permitted_values = [
+from typing import Optional
+permitted_values: list[str] = [
 "A",
 "2",
 "3",
@@ -14,7 +15,7 @@ permitted_values = [
 "K"
 ]
 
-permitted_colors = [
+permitted_colors: list[str] = [
 "Hearts",
 "Diamonds",
 "Spades",
@@ -22,45 +23,39 @@ permitted_colors = [
 ]
 
 class Card:
-    def __init__(self, Value, Color, face_down=False):
+    def __init__(self, Value: str, Color: str, face_down: bool=False) -> None:
         
         if Value in permitted_values:
-            self.value = Value
+            self.value: str = Value
         else:
             raise ValueError(f"Invalid value: \"{Value}\" for class Card \n Permitted values are: {permitted_values}")
 
         if Color in permitted_colors:
-            self.color = Color
+            self.color: str = Color
         else:
             raise ValueError(f"Invalid color: \"{Color}\" for class Card \n Permitted colors are: {permitted_colors}")
 
-        self.face_down = face_down
+        self.face_down: bool = face_down
     
-    def get_value(self):
+    def get_value(self) -> Optional[str]:
         if self.face_down:
             return None
         else:
             return self.value
 
-    def get_color(self):
+    def get_color(self) -> Optional[str]:
         if self.face_down:
             return None
         else:
             return self.color
     
-    def get_value_and_color(self):
-        if self.face_down:
-            return None, None
-        else:
-            return self.value, self.color
-    
-    def turn_over(self):
+    def turn_over(self) -> None:
         if self.face_down:
             self.face_down = False
         else:
             self.face_down = True
     
-    def get_color_emoji(self):
+    def get_color_emoji(self) -> Optional[str]:
         if self.face_down:
             return None
 
@@ -72,3 +67,4 @@ class Card:
             return "♠️"
         elif self.color == "Clubs":
             return "♣️"
+        assert False

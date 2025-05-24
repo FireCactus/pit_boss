@@ -1,6 +1,8 @@
 import discord
 import asyncio
-from discord.ext import commands
+from discord import Intents
+from discord.ext import commands, Bot
+from discord.ext.commands import Context
 
 from dotenv import load_dotenv
 import os
@@ -12,31 +14,23 @@ import bot_money_commands
 load_dotenv(dotenv_path="etc/.env")
 
 #initialize bot
-intents = discord.Intents.default()
+intents: Intents = discord.Intents.default()
 intents.message_content = True  # Enable the message content intent
 intents.messages = True
 intents.guilds = True
 
-bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
+bot: Bot = Bot(command_prefix='!', intents=intents, help_command=None)
 bot_game_commands.setup(bot) # import commands from other files
 bot_money_commands.setup(bot)
 
-delete_after_seconds = 60
-info_delete_after_seconds = 15
-
-
-def init_player(user):
-    try:
-        player = g_player.load_player_from_file(user)
-    except:
-        player = g_player.GamePlayer(user, starting_money)
-        g_player.save_player_to_file(player)
+info_delete_after_seconds: int = 30
 
 @bot.command("help")
-async def help(ctx):
-    user = str(ctx.message.author)
+async def help(ctx: Context) -> None:
+    user: str = str(ctx.message.author)
     await ctx.message.delete()
-    command_list = [
+    
+    command_list: list[str] = [
         "!daily -> Gives you a daily reward of {daily_reward} (renewable at midnight)",
         "!balance -> Returns your current balance",
         "!balance all -> Returns the balances of all players",
@@ -47,11 +41,11 @@ async def help(ctx):
         "!roulette -> starts roulette game"
     ]
 
-    string = "-------------------- available commands --------------------"
+    string: str = "-------------------- available commands --------------------"
     for command in command_list:
         string += command + "\n"
     string += "-----------------------------------------------------------"
-    await ctx.send(string, delete_after=info_delete_after_seconds*2)
+    await ctx.send(string, delete_after=info_delete_after_seconds)
 
 
 if __name__ == "__main__":
