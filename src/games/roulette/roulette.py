@@ -1,141 +1,124 @@
-from games import game_player as g_player
-
 import discord
 import asyncio
 import random
+import os
 
-black_emoji = "⬛"
-red_emoji = "🟥"
-green_emoji = "🟩"
-white_emoji = "⬜"
-up_emoji = "⬆️"
-down_emoji = "⬇️"
+from typing import Optional, Literal, NamedTuple
+from discord.ext.commands import Context
+from discord import File
 
-min_spin = 0
-max_spin = 37
+roulette_gifs_path: str = os.path.join("media", "roulette_gifs")
+roulette_outcomes: list[str] = ["Green", "Red", "Black", "Even", "Odd"]
 
-payout_table = {
-    "correct_red_black_guess":2,
-    "correct_green_guess":37,
-    "even_odd_payout":2,
-    "green_when_not_chosen":0.5 #when you pick red or black but the roulette comes up green
-}
+color_table: dict[int,str] ={
+    0: "Green",
+    1: "Red",
+    2: "Black",
+    3: "Red",
+    4: "Black",
+    5: "Red",
+    6: "Black",
+    7: "Red",
+    8: "Black",
+    9: "Red",
+    10: "Black",
+    11: "Black",
+    12: "Red",
+    13: "Black",
+    14: "Red",
+    15: "Black",
+    16: "Red",
+    17: "Black",
+    18: "Red",
+    19: "Red",
+    20: "Black",
+    21: "Red",
+    22: "Black",
+    23: "Red",
+    24: "Black",
+    25: "Red",
+    26: "Black",
+    27: "Red",
+    28: "Black",
+    29: "Black",
+    30: "Red",
+    31: "Black",
+    32: "Red",
+    33: "Black",
+    34: "Red",
+    35: "Black",
+    36: "Red"
+} 
+
+
+class RouletteBet(NamedTuple):
+    name: str
+    bet_amount: int
+    pick: Literal["Green", "Red", "Black", "Even", "Odd"] # mypy does not support dynamic unpacking of lists so need to do this
+
 
 class RouletteGame:
-    def __init__(self, min_bet=25, max_bet=1000, delete_messages_after_seconds=60):
-        self.players = []
 
-        self.min_bet = min_bet
-        self.max_bet = max_bet
-        self.delete_messages_after_seconds = delete_messages_after_seconds
+    _payout_table: dict[str,float] = {
+    "red_black_payout":2.0,
+    "even_odd_payout":2.0,
+    "correct_green_guess":37.0,
+    "green_when_not_chosen":0.5 #when you pick red or black but the roulette comes up green
+    }
 
-    def add_player_to_game(self, player):
+    _delete_gif_after_seconds = 10
+    _delete_info_after_seconds = 5
 
-        if player is g_player.GamePlayer:
-            raise ValueError(f"player is not GamePlayer but {type(player)}")
-            
-        
-        elif player.money < self.min_bet:
-            raise ValueError(f"Player doesnt have enough money to play! \n minimal bet is {self.min_bet}, player has {player.money}")
-        
-        elif player not in self.players:
-            self.players.append(player)
+    def __init__(self) -> None:
+        pass
 
-            
-    def remove_player(self, player):
-        if player not in self.players:
-            return None
 
-        self.players.remove(player)
+    async def play(self, ctx: Context, bet_list: list[RouletteBet]) -> dict[str,int]:
+        '''
+            returns which user and how much should get paid
+        '''
 
-    async def start_game_discord(self, ctx, bet_size_table):
-        
-        #remove money from players
-        for player in self.players:
-            player.money -= bet_size_table[player.name]
+        #pick random number
+        roulette_pick: int = random.randint(0,36)
+        roulette_gif_name: str = "roulette_{roulette_pick}.gif" 
+        roulette_gif_path: str = os.path.join(roulette_gifs_path,roulette_gif_name)
 
-        #init the strings for numbers and emoji spinnings
-        boxes_string = black_emoji + red_emoji
-        boxes_string = green_emoji + boxes_string*18
-        numbers_list =[0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
+        #send roulette gif
+        with open(roulette_gif_path, 'rb') as f:
+            gif: File = discord.File(f)
+            await ctx.send(file=gif, delete_after=self._delete_gif_after_seconds)
 
-        numbers_string = ""
-        for number in numbers_list:
-            if number < 10:
-                numbers_string += f"{number}  |"
-            else:
-                numbers_string += f"{number} |"
 
-        spin_msg = await ctx.send(white_emoji*18 + down_emoji + white_emoji *18 + "\n" + boxes_string+"\n" + numbers_string + "\n" + white_emoji*18 + up_emoji + white_emoji *18)
+        roulette_color: str = color_table[roulette_pick]
+        roulete_even_odd: str = "Even" if roulette_pick % 2 == 0 else "Odd"
 
-        spin_amount = random.randrange(min_spin, max_spin)
-        spin_amount += 37 #always make the spin at least one revolution
-
-        #spin the wheel
-        for _ in range(spin_amount):
-            await asyncio.sleep(1.01)
-
-            #move numbers to the left
-            numbers_list.append(numbers_list.pop(0))
-
-            #recrete the numbers string
-            numbers_string = ""
-            for number in numbers_list:
-                if number < 10:
-                    numbers_string += f"{number}  |"
-                else:
-                    numbers_string += f"{number} |"
-
-            #move emojis to the left
-            boxes_string = boxes_string[1:] + boxes_string[0]  #rotate the string by 1 to the left
-            await spin_msg.edit(content=white_emoji*18 + down_emoji + white_emoji *18 + "\n" + boxes_string+"\n"+ numbers_string + "\n" + white_emoji*18 + up_emoji + white_emoji *18)
-
-        #get result
-        result_color = boxes_string[18]
-        result_number = numbers_list[18]
-        if result_number == 0:
-            result_number = "chuj"
-
-        elif result_number % 2 == 0:
-            result_number = "even"
-        
-        elif result_number % 2 == 1:
-            result_number = "odd" 
-
-        end_msg = await ctx.send(f"roulette has stopped!\n Result is: {result_color}{result_number}!")
+        #print roulette result to chat
+        await ctx.send(f"The roulette has stopped!\n Result was: {roulette_pick}-{roulette_color}!", delete_after=self._delete_info_after_seconds)
         
     
-        #payout any wins
-        for player in self.players:
-            #check for color win
+        winners_dict: dict[str,int] = {}
+        for bet in bet_list:
+            winners_dict[bet.name] = 0
+
+        #determine who won and how much to give them
+        for bet in bet_list:
             
-            if player.roulette_pick_color == result_color:
-                if result_color == green_emoji:
-                    payout = bet_size_table[player.name] * payout_table['correct_green_guess']
-                else:
-                    payout = bet_size_table[player.name] * payout_table['correct_red_black_guess']
-                
-                player.money += payout
-                await ctx.send(f"{player.name} Won {payout}!")
-            elif player.roulette_pick_color != None:
-                await ctx.send(f"{player.name} Lost {bet_size_table[player.name]}")
+            # if bet on even/odd and was correct
+            if bet.pick in ["Even", "Odd"] and roulete_even_odd == bet.pick:
+                winners_dict[bet.name] += int(bet.bet_amount * self._payout_table['even_odd_payout'])
+            
+            # if bet on red/black and was correct
+            elif bet.pick in ["Red", "Black"] and roulette_color == bet.pick:
+                winners_dict[bet.name] += int(bet.bet_amount * self._payout_table['red_black_payout'])
 
-            #check for number win (even, odd)
-            elif player.roulette_pick_number == result_number:
-                payout = bet_size_table[player.name] * payout_table['even_odd_payout']
-                player.money += payout
-                await ctx.send(f"{player.name} Won {payout}!")
-            elif player.roulette_pick_number != None:
-                await ctx.send(f"{player.name} Lost {bet_size_table[player.name]}")
+            # if bet on green and was correct
+            elif bet.pick == "Green" and roulette_color == bet.pick:
+                winners_dict[bet.name] += int(bet.bet_amount * self._payout_table['correct_green_guess'])
 
-            #save players to file
-            g_player.save_player_to_file(player)
-        
-        await asyncio.sleep(5)
+            # if bet on anything other than green and green was the result
+            elif bet.pick != "Green" and roulette_color == "Green":
+                winners_dict[bet.name] += int(bet.bet_amount * self._payout_table['green_when_not_chosen'])
 
-        await spin_msg.delete()
-        await end_msg.delete()
-
-
+        return winners_dict
 
                 
