@@ -151,6 +151,8 @@ def setup(bot: Bot) -> None:
                 player.modify_balance(amount)
                 
         await ctx.send(winner_string)
+        await asyncio.sleep(5)
+        roulette_start(ctx)
                 
 
 
