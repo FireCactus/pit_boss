@@ -5,7 +5,7 @@ project_root: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.absp
 class Loc:
 
     @staticmethod
-    def datahub(*args) -> str:
+    def datahub(*args: str) -> str:
         return os.path.join(project_root, "datahub", *args)
     
     @staticmethod

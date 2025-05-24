@@ -104,7 +104,6 @@ class RouletteGame:
         #print roulette result to chat
         await asyncio.sleep(self._delete_gif_after_seconds-3)
         res_string: str =  f"The roulette has stopped!\n Result was: {roulette_pick}-{roulette_color}!"
-        res_string += "--------------------------------------"
         await ctx.send(res_string, delete_after=self._delete_info_after_seconds)
         
     

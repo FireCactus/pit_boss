@@ -76,12 +76,9 @@ class BlueprintCompiler:
                         referenced_table = match.group(1)
                         dependencies[table.name].add(referenced_table)
 
-        for name in table_map:
-            dependencies.setdefault(name, set())
-
-        in_degree: Dict[str, int] = {name: 0 for name in table_map}
-        for table, deps in dependencies.items():
-            in_degree[table] = len(deps)
+        in_degree: Dict[str, int] = {name: 0 for name in table_map.keys()}
+        for table_dep, deps in dependencies.items():
+            in_degree[table_dep] = len(deps)
 
         queue = deque([name for name, deg in in_degree.items() if deg == 0])
         sorted_names: List[str] = []
