@@ -186,7 +186,3 @@ class PlayersDatabase(Database):
 
         self._cursor.execute(query, (value, player))
         self._cursor.connection.commit()
-    
-       
-
-

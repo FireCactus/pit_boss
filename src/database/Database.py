@@ -33,7 +33,6 @@ class Database(metaclass=Singleton):
         for table in loaded_scheme.tables:
             current = existing_tables.get(table.name)
             if current == None:
-                print(self.__generate_create_sql(table))
                 self._cursor.execute(self.__generate_create_sql(table))
             elif not self.__compare_tables(current, table):
                 self.__rebuild_table( current, table)
@@ -63,11 +62,11 @@ class Database(metaclass=Singleton):
 
                 # Restrictions: "PRIMARY KEY", "NOT NULL", "DEFAULT xyz"
                 restricions_parts = []
-                if col[5]:  # col[5] = pk (1 jeśli klucz główny)
+                if col[5]:
                     restricions_parts.append("PRIMARY KEY")
-                if col[3]:  # col[3] = notnull (1 jeśli NOT NULL)
+                if col[3]:
                     restricions_parts.append("NOT NULL")
-                if col[4] is not None:  # col[4] = default_value
+                if col[4] is not None:
                     restricions_parts.append(f"DEFAULT {col[4]}")
 
                 restricions = " ".join(restricions_parts) if restricions_parts else None

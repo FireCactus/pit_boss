@@ -68,7 +68,6 @@ class BlueprintCompiler:
         table_map: Dict[str, TableScheme] = {table.name: table for table in tables}
         dependencies: Dict[str, Set[str]] = defaultdict(set)
 
-        # Zbuduj zależności
         for table in tables:
             for col in table.columns:
                 if col.relation:
@@ -77,16 +76,13 @@ class BlueprintCompiler:
                         referenced_table = match.group(1)
                         dependencies[table.name].add(referenced_table)
 
-        # Uzupełnij brakujące wpisy
         for name in table_map:
             dependencies.setdefault(name, set())
 
-        # Oblicz in-degree (ile tabel każda zależy od innych)
         in_degree: Dict[str, int] = {name: 0 for name in table_map}
         for table, deps in dependencies.items():
             in_degree[table] = len(deps)
 
-        # Zacznij od tabel bez zależności
         queue = deque([name for name, deg in in_degree.items() if deg == 0])
         sorted_names: List[str] = []
 
