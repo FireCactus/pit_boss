@@ -244,7 +244,7 @@ class BlackjackGame:
     
 
     async def send_bj_table_to_discord(self, ctx: Context, edit_message: Optional[Message] = None) -> Message:
-        string: str = "-----------------------------------------\n"
+        string: str = "----------------------------------------\n"
         string += f"Dealer: ({calculate_blackjack_hand_value(self.dealer_cards)})\n"
         for card in self.dealer_cards:
             if card.face_down == False:
