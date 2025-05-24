@@ -33,7 +33,10 @@ class Player:
             raise ValueError("Bet size is bigger than player balance")
 
         db.change_player_bet(self.name, amount)
-    
+
+    def get_player_bet(self) -> int:
+        result = db.get_player_bet(self.name)
+        return result
 
     def receive_daily(self) -> None:
         if db.check_if_player_received_daily(self.name):

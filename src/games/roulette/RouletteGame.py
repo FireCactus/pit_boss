@@ -89,7 +89,7 @@ class RouletteGame:
 
         #pick random number
         roulette_pick: int = random.randint(0,36)
-        roulette_gif_name: str = "roulette_{roulette_pick}.gif" 
+        roulette_gif_name: str = f"roulette_{roulette_pick}.gif" 
         roulette_gif_path: str = os.path.join(roulette_gifs_path,roulette_gif_name)
 
         #send roulette gif
@@ -102,6 +102,7 @@ class RouletteGame:
         roulete_even_odd: str = "Even" if roulette_pick % 2 == 0 else "Odd"
 
         #print roulette result to chat
+        await asyncio.sleep(self._delete_gif_after_seconds-3)
         await ctx.send(f"The roulette has stopped!\n Result was: {roulette_pick}-{roulette_color}!", delete_after=self._delete_info_after_seconds)
         
     

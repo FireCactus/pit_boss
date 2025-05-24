@@ -31,17 +31,17 @@ async def help(ctx: Context) -> None:
     await ctx.message.delete()
     
     command_list: list[str] = [
-        "!daily -> Gives you a daily reward of {daily_reward} (renewable at midnight)",
-        "!balance -> Returns your current balance",
-        "!balance all -> Returns the balances of all players",
-        "!blackjack -> Starts a blackjack game",
-        "!bet size [amount] -> Changes your bet size to the provided amount",
-        "!give [player name] [amount] -> Transfers an amount of money from your account to the provided users",
-        "!all in -> Changes your bet size to the maximum allowed",
-        "!roulette -> starts roulette game"
+        f"!daily -> Gives you a daily reward of 75 (renewable at midnight)",
+        f"!balance -> Returns your current balance",
+        f"!balance all -> Returns the balances of all players",
+        f"!blackjack -> Starts a blackjack game",
+        f"!bet size [amount] -> Changes your bet size to the provided amount",
+        f"!give [player name] [amount] -> Transfers an amount of money from your account to the provided users",
+        f"!all in -> Changes your bet size to the maximum allowed",
+        f"!roulette -> starts roulette game"
     ]
 
-    string: str = "-------------------- available commands --------------------"
+    string: str = "-------------------- available commands --------------------\n"
     for command in command_list:
         string += command + "\n"
     string += "-----------------------------------------------------------"

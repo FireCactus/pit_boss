@@ -11,7 +11,10 @@ import discord
 import asyncio
 
 
-def calculate_blackjack_hand_value(cards: list[Card]) -> int:
+def calculate_blackjack_hand_value(cards: Union[list[Card],Card]) -> int:
+
+    if isinstance(cards, Card):
+        cards = [cards]
 
     total_value: int = 0
     aces: int = 0
@@ -39,7 +42,7 @@ class BlackJackHand():
 
     def __init__(self, bet:int, cards: Optional[list[Card]]=None) -> None:
         self.bet: int = bet
-        in_play: bool = True
+        self.in_play: bool = True
         
         self.cards: list[Card] 
         if cards == None:
@@ -52,6 +55,7 @@ class BlackJackHand():
     
     def double_down(self) -> None:
         self.bet = self.bet*2
+        self.stand()
     
     def is_splittable(self) -> bool:
         if len(self.cards) != 2:
@@ -71,13 +75,14 @@ class BlackjackPlayer():
 
     def __init__(self, name: str, bet: int, balance:int) -> None:
         self.name:str = name
+        self.initial_bet: int = bet
         self.balance:int = balance # used for determining if the user will have enough for splits and doubles
         self.money_spent_on_actions: int = 0 # how much the users spent on doubling or splitting 
         self.hands: list[BlackJackHand] = [BlackJackHand(bet)]
     
     def split_hand(self, hand_pos: int) -> None:
         original_hand: BlackJackHand = self.hands[hand_pos]
-        new_hand: BlackJackHand = BlackJackHand(original_hand.bet, original_hand.cards.pop(-1))
+        new_hand: BlackJackHand = BlackJackHand(original_hand.bet, [original_hand.cards.pop(-1)])
 
         self.hands.append(new_hand)
         
@@ -189,7 +194,8 @@ class BlackjackGame:
                         player.balance -= player.hands[i].bet
                         player.money_spent_on_actions += player.hands[i].bet
 
-                        player.hands[i].double_down()
+                        player.hands[i].cards.append(self.shoe.draw_card(face_down=True))
+                        player.hands[i].double_down()   
 
                     elif decision == "split":
                         player.split_hand(i)
@@ -208,8 +214,7 @@ class BlackjackGame:
 
         for player in self.players:
             winners_table[player.name] =- player.money_spent_on_actions
-
-        payout_message: str = "------------------------------------------------------------"
+        
 
         dealer_total = calculate_blackjack_hand_value(self.dealer_cards)
         if dealer_total > 21:
@@ -217,7 +222,6 @@ class BlackjackGame:
                 for hand in player.hands:
                     if calculate_blackjack_hand_value(hand.cards) <= 21:
                         payout = math.floor(hand.bet * self._payout_table["normal_win"])
-                        payout_message += f"   {player.name} Wins {payout}"
                         winners_table[player.name] += payout
 
         else:
@@ -226,32 +230,21 @@ class BlackjackGame:
                     hand_value = calculate_blackjack_hand_value(hand.cards)
 
                     if hand_value > 21:
-                        payout_message += f"   {player.name} Loses {hand.bet}"
                         continue
 
                     if hand_value > dealer_total:
                         payout = math.floor(hand.bet * self._payout_table["normal_win"])
-                        payout_message += f"   {player.name} Wins {payout}"
                         winners_table[player.name] += payout
 
                     elif hand_value == dealer_total:
                         payout = math.floor(hand.bet * self._payout_table["draw"])
-                        payout_message += f"   {player.name} matched the dealer. draw payout: {payout}"
                         winners_table[player.name] += payout
-
-                    elif hand_value < dealer_total:
-                        payout_message += f"   {player.name} Loses {hand.bet}"
-
-
-        payout_message_dc: Message = await ctx.send(payout_message, delete_after=15)
-        
-
 
         return winners_table
     
 
     async def send_bj_table_to_discord(self, ctx: Context, edit_message: Optional[Message] = None) -> Message:
-        string: str = ""
+        string: str = "-----------------------------------------\n"
         string += f"Dealer: ({calculate_blackjack_hand_value(self.dealer_cards)})\n"
         for card in self.dealer_cards:
             if card.face_down == False:
@@ -278,9 +271,9 @@ class BlackjackGame:
 
         message: Message
         if edit_message == None:
-            message = await ctx.send(string, delete_after=15)
+            message = await ctx.send(string)
         else:
-            message = await edit_message.edit(content=string, delete_after=16)
+            message = await edit_message.edit(content=string)
         
         return message
 
@@ -296,7 +289,7 @@ class BlackjackGame:
         hand: BlackJackHand = player.hands[hand_number]
         if player.balance >= hand.bet *2:
             if hand.is_doubleable():
-                await message.add_reaction(self._split_reaction)
+                await message.add_reaction(self._double_reaction)
             if hand.is_splittable():
                 await message.add_reaction(self._split_reaction)
     

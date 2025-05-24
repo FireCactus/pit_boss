@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.ext.commands import Context, Bot
 import asyncio
 
-from games import Player
+from games.Player import Player
 from games.roulette.RouletteGame import RouletteGame, RouletteBet, RouletteOutcomes
 from games.cardgames.blackjack.BlackjackGame import BlackjackGame, BlackjackPlayer
 
@@ -100,7 +100,7 @@ def setup(bot: Bot) -> None:
                 elif user_reaction.emoji == black_reaction:
                     pick = RouletteOutcomes.BLACK
                 
-                bet: RouletteBet = RouletteBet(name=player.name, bet_amount=player.get_player_bet(), pick=RouletteOutcomes.BLACK)
+                bet: RouletteBet = RouletteBet(name=player.name, bet_amount=player.get_player_bet(), pick=pick)
                 roulette_bets.append(bet)
                 
 
@@ -142,7 +142,7 @@ def setup(bot: Bot) -> None:
         #pay the winners
         winner_string: str = "---------- Roulette Results ----------\n"
         for player, amount in winners.items():
-            winner_string += f"  {player} "
+            winner_string += f"\n  {player} "
             if amount == 0:
                 winner_string += f" lost {total_bet_by_user[player]}"
             else:
@@ -195,24 +195,28 @@ def setup(bot: Bot) -> None:
         await message.delete()  # remove starting message
 
         #play game
-        game: BlackjackGame = BlackjackGame(bj_player)
-        winners: dict[str,int] = game.start(ctx)
+        game: BlackjackGame = BlackjackGame(bj_players)
+        winners: dict[str,int] = await game.start(ctx)
 
         #pay the winners
         winner_string: str = "---------- BlackJack Results ----------\n"
-        for player, amount in winners.items():
-            winner_string += f"\n  {player} "
-            if amount == 0:
+        for user, amount in winners.items():
+            player = Player(user)
+            bet = [bj_player.initial_bet for bj_player in bj_players if bj_player.name == player.name][0]
+            winner_string += f"\n  {player.name} "
+            if amount == bet:
                 winner_string += f" broke even!"
                 player.modify_balance(bet)
+            elif amount == 0:
+                winner_string += f"lost their bet ({bet})"
+
             elif amount < 0:
                 winner_string += f" lost {-amount}"
-                player = Player(player)
                 player.modify_balance(amount)
             else:
                 winner_string += f" Won {amount}"
-                player = Player(player)
                 player.modify_balance(amount)
+        winner_string +=  "\n-----------------------------------------"
                 
         await ctx.send(winner_string)
         await asyncio.sleep(5)
