@@ -3,59 +3,68 @@ import asyncio
 import random
 import os
 
+from enum import Enum
 from typing import Optional, Literal, NamedTuple
 from discord.ext.commands import Context
 from discord import File
 
 roulette_gifs_path: str = os.path.join("media", "roulette_gifs")
-roulette_outcomes: list[str] = ["Green", "Red", "Black", "Even", "Odd"]
+
+
+class RouletteOutcomes(str, Enum):
+    GREEN="GREEN"
+    RED="RED"
+    BLACK="BLACK"
+    EVEN="EVEN"
+    ODD="ODD"
+
+
 
 color_table: dict[int,str] ={
-    0: "Green",
-    1: "Red",
-    2: "Black",
-    3: "Red",
-    4: "Black",
-    5: "Red",
-    6: "Black",
-    7: "Red",
-    8: "Black",
-    9: "Red",
-    10: "Black",
-    11: "Black",
-    12: "Red",
-    13: "Black",
-    14: "Red",
-    15: "Black",
-    16: "Red",
-    17: "Black",
-    18: "Red",
-    19: "Red",
-    20: "Black",
-    21: "Red",
-    22: "Black",
-    23: "Red",
-    24: "Black",
-    25: "Red",
-    26: "Black",
-    27: "Red",
-    28: "Black",
-    29: "Black",
-    30: "Red",
-    31: "Black",
-    32: "Red",
-    33: "Black",
-    34: "Red",
-    35: "Black",
-    36: "Red"
+    0: RouletteOutcomes.GREEN,
+    1: RouletteOutcomes.RED,
+    2: RouletteOutcomes.BLACK,
+    3: RouletteOutcomes.RED,
+    4: RouletteOutcomes.BLACK,
+    5: RouletteOutcomes.RED,
+    6: RouletteOutcomes.BLACK,
+    7: RouletteOutcomes.RED,
+    8: RouletteOutcomes.BLACK,
+    9: RouletteOutcomes.RED,
+    10: RouletteOutcomes.BLACK,
+    11: RouletteOutcomes.BLACK,
+    12: RouletteOutcomes.RED,
+    13: RouletteOutcomes.BLACK,
+    14: RouletteOutcomes.RED,
+    15: RouletteOutcomes.BLACK,
+    16: RouletteOutcomes.RED,
+    17: RouletteOutcomes.BLACK,
+    18: RouletteOutcomes.RED,
+    19: RouletteOutcomes.RED,
+    20: RouletteOutcomes.BLACK,
+    21: RouletteOutcomes.RED,
+    22: RouletteOutcomes.BLACK,
+    23: RouletteOutcomes.RED,
+    24: RouletteOutcomes.BLACK,
+    25: RouletteOutcomes.RED,
+    26: RouletteOutcomes.BLACK,
+    27: RouletteOutcomes.RED,
+    28: RouletteOutcomes.BLACK,
+    29: RouletteOutcomes.BLACK,
+    30: RouletteOutcomes.RED,
+    31: RouletteOutcomes.BLACK,
+    32: RouletteOutcomes.RED,
+    33: RouletteOutcomes.BLACK,
+    34: RouletteOutcomes.RED,
+    35: RouletteOutcomes.BLACK,
+    36: RouletteOutcomes.RED
 } 
 
 
 class RouletteBet(NamedTuple):
     name: str
     bet_amount: int
-    pick: Literal["Green", "Red", "Black", "Even", "Odd"] # mypy does not support dynamic unpacking of lists so need to do this
-
+    pick: RouletteOutcomes 
 
 class RouletteGame:
 
@@ -104,19 +113,19 @@ class RouletteGame:
         for bet in bet_list:
             
             # if bet on even/odd and was correct
-            if bet.pick in ["Even", "Odd"] and roulete_even_odd == bet.pick:
+            if bet.pick in [RouletteOutcomes.EVEN, RouletteOutcomes.ODD] and roulete_even_odd == bet.pick:
                 winners_dict[bet.name] += int(bet.bet_amount * self._payout_table['even_odd_payout'])
             
             # if bet on red/black and was correct
-            elif bet.pick in ["Red", "Black"] and roulette_color == bet.pick:
+            elif bet.pick in [RouletteOutcomes.RED, RouletteOutcomes.BLACK] and roulette_color == bet.pick:
                 winners_dict[bet.name] += int(bet.bet_amount * self._payout_table['red_black_payout'])
 
             # if bet on green and was correct
-            elif bet.pick == "Green" and roulette_color == bet.pick:
+            elif bet.pick == RouletteOutcomes.GREEN and roulette_color == bet.pick:
                 winners_dict[bet.name] += int(bet.bet_amount * self._payout_table['correct_green_guess'])
 
             # if bet on anything other than green and green was the result
-            elif bet.pick != "Green" and roulette_color == "Green":
+            elif bet.pick != RouletteOutcomes.GREEN and roulette_color == RouletteOutcomes.GREEN:
                 winners_dict[bet.name] += int(bet.bet_amount * self._payout_table['green_when_not_chosen'])
 
         return winners_dict

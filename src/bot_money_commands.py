@@ -1,85 +1,67 @@
 from discord.ext import commands
+from discord.ext.commands import Context, Bot
+from typing import Optional
 
-WESKER_GIF = "media/wesker-no-wesker-no-no.gif"
+from games import Player
+from database.PlayersDatabase import PlayersDatabase
+db = PlayersDatabase()
 
-def setup(bot):
+info_delete_after_seconds: int = 15
+
+def setup(bot: Bot) -> None:
+
     @bot.command("daily")
-    async def change_bet_to_max(ctx):
-        user = str(ctx.message.author)
-
-        init_player(user)
-        player = g_player.load_player_from_file(user)    
-
+    async def receive_dailty(ctx: Context) -> None:
+        user: str = str(ctx.message.author)
+        player: Player = Player(user)
         await ctx.message.delete()
-
-        if player.received_daily:
-            await ctx.send(f"Sorry {player.name}, You already received your daily reward!",delete_after=info_delete_after_seconds)
-            return None
         
-        player.received_daily = True
-        player.money += daily_reward
-
-        g_player.save_player_to_file(player)
-        await ctx.send(f"{player.name} received their daily reward! {daily_reward} added to balance")
-
+        try:
+            player.receive_daily()
+            await ctx.send(f" {player.name} received their daily reward! {player._daily_amount} added to balance ")
+        except ValueError as e:
+            await ctx.send(f"Unable to give daily to {player.name}\nReason: {e}", delete_after=info_delete_after_seconds)
 
 
     @bot.command("give")
-    async def transfer_money(ctx, arg_1, arg_2):
-        #init from user
-        user = str(ctx.message.author)
+    async def transfer_money(ctx: Context, arg_1: str, arg_2: str) -> None:
+        user: str = str(ctx.message.author)
+        from_player: Player = Player(user)
         await ctx.message.delete()
-        init_player(user)
 
+
+        to_user: str = arg_1
+        amount: int = int(arg_2)
+
+        #check if to player exists
+        if db.check_if_player_exists(to_user) ==  False:
+            await ctx.send(f"Sorry, player with name {to_user} does not exist", delete_after=info_delete_after_seconds)
+            return None            
+
+        to_player: Player = Player(to_user)
+
+        #check if from player has enough money
+        balance: int = from_player.get_balance()
+        if balance < amount:
+            await ctx.send(f"Sorry, you only have {balance}", delete_after=info_delete_after_seconds)
+            return None 
+
+        from_player.modify_balance(-amount)
+        to_player.modify_balance(amount)
         
-        from_user =  g_player.load_player_from_file(user)
-        to_user = arg_1
-        try:
-            amount = int(arg_2)
-        except:
-            await ctx.send(f"{arg_2} is an invalid amount",delete_after=info_delete_after_seconds)
         
-        player_names = []
-        for player in g_player.load_all_players():
-            player_names.append(player.name)
-        
-        if to_user not in player_names:
-            await ctx.send(f"No such User as {to_user}",delete_after=info_delete_after_seconds)
-        else:
-            to_user = g_player.load_player_from_file(to_user)
-        
-        if to_user.name == from_user.name:
-            await ctx.send(f"You can't send money to yourself",delete_after=info_delete_after_seconds)
-            return
-
-        if amount > from_user.money:
-            await ctx.send(f"Insufficient money! You only have {from_user.money}",delete_after=info_delete_after_seconds)
-        elif amount < 0:
-            with open(WESKER_GIF, 'rb') as f:
-                gif = discord.File(f)
-                await ctx.send(file=gif)
-        else:
-            from_user.money -= amount
-            to_user.money += amount
-            await ctx.send(f"Transferred {amount} from {from_user.name} to {to_user.name}",delete_after=info_delete_after_seconds)
-
-            g_player.save_player_to_file(from_user)
-            g_player.save_player_to_file(to_user)
-
-            
-
     @bot.command("balance")
-    async def get_user_balance(ctx, arg_1=None):
-        user = str(ctx.message.author)
+    async def get_user_balance(ctx: Context, arg_1: Optional[str]) -> None:
+        user: str = str(ctx.message.author)
         await ctx.message.delete()
         
-        init_player(user)
-        player = g_player.load_player_from_file(user)   
-    
         if arg_1 == "all":
+
             string = "---- All players money ----\n"
-            for player in g_player.load_all_players():
-                string += f"{player.name}   {player.money}\n--------------------\n"
-            await ctx.send(string,delete_after=info_delete_after_seconds)
+            for username in db.get_all_players():
+                listed_player: Player = Player(username)
+                string += f"{listed_player.name}   {listed_player.get_balance()}\n--------------------\n"
+            await ctx.send(string)
         else:
-            await ctx.send(f"{user} balance: {player.money}",delete_after=info_delete_after_seconds)
+            player: Player = Player(user)
+            await ctx.send(f"{player.name} balance: {player.get_balance()}",delete_after=info_delete_after_seconds)

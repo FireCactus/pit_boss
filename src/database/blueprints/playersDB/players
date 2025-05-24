@@ -6,3 +6,4 @@ received_daily          BOOLEAN
 exp                     INTEGER
 title                   TEXT
 last_interaction_time   DATETIME
+bet                     INTEGER

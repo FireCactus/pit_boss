@@ -23,13 +23,16 @@ class Item(NamedTuple):
 
 class PlayersDatabase(Database):
     _cursor: sqlite3.Cursor
+
+    _welcome_money: int = 500
+    _starting_gambler_title = "Novice gambler"
     
     def __init__(self) -> None:
         super().__init__(name="playersDB")
         self._cursor = sqlite3.connect(f"{Loc.datahub(self._name)}.db").cursor()
 
     def player_statistics(self, player: str) -> Optional[PlayerStatistics]:
-        query = """
+        query: str= """
             SELECT 
                 S.current_lose_streak,
                 S.current_win_streak,
@@ -49,7 +52,7 @@ class PlayersDatabase(Database):
         return PlayerStatistics(*result) if result else None
     
     def player_eq(self, player: str) -> List[Item]:
-        query = """
+        query: str= """
             SELECT 
                 I.name,
                 I.type,
@@ -69,7 +72,7 @@ class PlayersDatabase(Database):
         return [Item(*row) for row in rows]
     
     def get_player_balance(self, player: str) -> int:
-        query = """
+        query: str= """
             SELECT 
                 balance
             FROM 
@@ -82,7 +85,7 @@ class PlayersDatabase(Database):
         return result
     
     def update_player_balance(self, player: str, amount: int) -> None:
-        query = """
+        query: str= """
             UPDATE players
             SET balance = balance + ?
             WHERE username = ?;
@@ -90,22 +93,97 @@ class PlayersDatabase(Database):
         self._cursor.execute(query, (amount, player))
         self._connection.commit()
 
-    def add_new_player(self, player: str):
+    def check_if_player_exists(self, player:str) -> bool:
+        query: str= """
+            SELECT 
+                username
+            FROM 
+                players
+        """
+        self._cursor.execute(query)
+        result: list[str] = self._cursor.fetchall()
+        
+        if player in result:
+            return True
+       
+        return False
+    
+
+    def add_new_player(self, player: str) -> None:
 
 
-        query = """
-            INSERT INTO PLAYERS (username, balance, received_daily, exp, title, last_interaction_time)
-        VALUES (?, ?, ?, ?, ?, ?);
+        query: str= """
+            INSERT INTO PLAYERS (username, balance, received_daily, exp, title, last_interaction_time, bet)
+        VALUES (?, ?, ?, ?, ?, ?, ?);
         """
         self._cursor.execute(query, (
             player,
-            500,
+            self._welcome_money,
             False,
             0,
-            "xyz",
-            datetime.now().isoformat()
+            self._starting_gambler_title,
+            datetime.now().isoformat(),
+            25
         ))
         self._connection.commit()
+    
+    def get_player_bet(self, player: str) -> int:
+        query: str = """
+            SELECT 
+                bet
+            FROM 
+                players
+            WHERE 
+                username = ?;
+        """
+        self._cursor.execute(query, (player,))
+        result: int = self._cursor.fetchone()
+        return result
 
-db = PlayersDatabase()
+    def change_player_bet(self, player: str, amount: int) -> None:
+        query: str= """
+            UPDATE players
+            SET bet = ?
+            WHERE username = ?;
+        """
+        self._cursor.execute(query, (amount, player))
+        self._connection.commit()
+    
+    def get_all_players(self) -> list[str]:
+        query: str= """
+            SELECT 
+                username
+            FROM 
+                players
+        """
+        self._cursor.execute(query)
+        result: list[str] = self._cursor.fetchall()
+       
+        return result
+    
+    def check_if_player_received_daily(self, player: str) -> bool:
+        query: str= """
+            SELECT 
+                received_daily  
+            FROM 
+                players
+            WHERE username = ?
+        """
+        self._cursor.execute(query, player)
+        result: list[str] = self._cursor.fetchone()
+       
+        return result
+    
+    def change_player_received_daily(self, player: str, value: bool) -> None:
+        query: str= """
+            UPDATE players
+            SET received_daily = ?
+            WHERE username = ?;
+        """
+
+        self._cursor.execute(query, (value, player))
+        self._connection.commit()
+    
+       
+
 
