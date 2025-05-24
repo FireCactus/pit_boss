@@ -1,19 +1,21 @@
 from games.cardgames.card import Card, permitted_colors, permitted_values
 import random
+from typing import Union
 
-Normal_suite_values = permitted_values
-Normal_suites = permitted_colors
+Normal_suite_values: list[str] = permitted_values
+Normal_suites: list[str] = permitted_colors
 
 
 class Deck:
-    def __init__(self, type="empty"):
+    def __init__(self, type:str ="empty") -> None:
+        self.cards: list[Card]
         if type == "normal":
 
             self.cards = []
 
             for Suite in Normal_suites:
                 for Value in Normal_suite_values:
-                    card = Card(Value, Suite)
+                    card: Card = Card(Value, Suite)
                     self.cards.append(card)
 
         elif type == "empty":
@@ -22,23 +24,18 @@ class Deck:
         else:
             raise ValueError(f"No such deck type as: {type}")
 
-    def draw_card(self, face_down=True):
-        card = self.cards.pop(-1)  # pop from top of tdeck
+    def draw_card(self, face_down:bool = True) -> Card:
+        card: Card = self.cards.pop(-1)  # pop from top of tdeck
         card.face_down = face_down
         return card
 
-    def size(self):
+    def size(self) -> int:
         return len(self.cards)
 
-    def shuffle(self):
+    def shuffle(self) -> None:
         random.shuffle(self.cards)
 
-    def list_cards(self):
-        for card in self.cards:
-            val, color = card.get_value_and_color()
-            print(f"{val} of {color}")
-
-    def insert(self, cards):
+    def insert(self, cards: Union[list[Card], Card]) -> None:
         if isinstance(cards, Card):
             self.cards.append(cards)
 
@@ -46,6 +43,4 @@ class Deck:
             for card in cards:
                 self.insert(card)
         else:
-            raise ValueError(
-                f"Invalid object ( {card} ) passed to deck. \n deck.insert accepts only objects of class Card and lists of Cards"
-            )
+            raise ValueError(f"Invalid object ( {cards} ) passed to deck. \n deck.insert accepts only objects of class Card and lists of Cards")

@@ -6,6 +6,7 @@ import asyncio
 from games import Player
 from games.cardgames.blackjack import blackjack as bj
 from games.roulette.RouletteGame import RouletteGame, RouletteBet, RouletteOutcomes
+from games.cardgames.blackjack import BlackjackGame, BlackjackPlayer
 
 odd_reaction: str = "1️⃣"
 even_reaction: str = "2️⃣"
@@ -100,7 +101,7 @@ def setup(bot: Bot) -> None:
                 elif user_reaction.emoji == black_reaction:
                     pick = RouletteOutcomes.BLACK
                 
-                bet: RouletteBet = RouletteBet(name=player.name, bet_amount=player.get_player_bet, pick=RouletteOutcomes.BLACK)
+                bet: RouletteBet = RouletteBet(name=player.name, bet_amount=player.get_player_bet(), pick=RouletteOutcomes.BLACK)
                 roulette_bets.append(bet)
                 
 
@@ -147,13 +148,73 @@ def setup(bot: Bot) -> None:
                 winner_string += f" lost {total_bet_by_user[player]}"
             else:
                 winner_string += f" Won {amount - total_bet_by_user[player]}"
-                player = Player(bet.user)
+                player = Player(player)
                 player.modify_balance(amount)
                 
         await ctx.send(winner_string)
+        await asyncio.sleep(5)
+        roulette_start(ctx)
                 
 
 
     @bot.command("blackjack")
     async def start_blackjack_game(ctx: Context) -> None:
-        pass
+        
+        # remove starting message
+        user: str = str(ctx.message.author)
+        await ctx.message.delete()
+
+        join_message: Message = await ctx.send(f"Starting blackjack game in {start_game_countdown} seconds!\nClick the emoji to join")
+        await join_message.add_reaction(join_bj_game_reaction)
+
+        await asyncio.sleep(start_game_countdown)  # wait for everyone to place bets
+        message: Message = await ctx.channel.fetch_message(join_message.id)  # refresh message to get all new reactions
+
+        #create BlackjackPlayer objects from players
+        bj_players: list[BlackjackPlayer] = []
+        for user_reaction in message.reactions:
+            users: list[User] = [user async for user in user_reaction.users()]
+
+            for user in users:
+                if user == bot.user:
+                    continue
+        
+                player = Player(str(user))
+                balance: int = player.get_balance()
+                bet: int = player.get_player_bet()
+                if bet > balance:
+                    await ctx.send(f"Sorry {player.name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]", delete_after=info_delete_after_seconds)
+                else:
+                    player.modify_balance(-bet)
+                    bj_player: BlackjackPlayer = BlackjackPlayer(player.name, bet, balance)
+                    bj_players.append(bj_player)
+        
+        if len(bj_players) == 0:
+            await ctx.send("Noone joined the table :(", delete_after=info_delete_after_seconds)
+            return None
+
+        await message.delete()  # remove starting message
+
+        #play game
+        game: BlackjackGame = BlackjackGame(bj_player)
+        winners: dict[str,int] = game.start(ctx)
+
+        #pay the winners
+        winner_string: str = "---------- BlackJack Results ----------\n"
+        for player, amount in winners.items():
+            winner_string += f"\n  {player} "
+            if amount == 0:
+                winner_string += f" broke even!"
+                player.modify_balance(bet)
+            elif amount < 0:
+                winner_string += f" lost {-amount}"
+                player = Player(player)
+                player.modify_balance(amount)
+            else:
+                winner_string += f" Won {amount}"
+                player = Player(player)
+                player.modify_balance(amount)
+                
+        await ctx.send(winner_string)
+        await asyncio.sleep(5)
+        roulette_start(ctx)
