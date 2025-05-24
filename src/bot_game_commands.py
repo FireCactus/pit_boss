@@ -4,9 +4,8 @@ from discord.ext.commands import Context, Bot
 import asyncio
 
 from games import Player
-from games.cardgames.blackjack import blackjack as bj
 from games.roulette.RouletteGame import RouletteGame, RouletteBet, RouletteOutcomes
-from games.cardgames.blackjack import BlackjackGame, BlackjackPlayer
+from games.cardgames.blackjack.BlackjackGame import BlackjackGame, BlackjackPlayer
 
 odd_reaction: str = "1️⃣"
 even_reaction: str = "2️⃣"

@@ -1,8 +1,8 @@
 import discord
 import asyncio
 from discord import Intents
-from discord.ext import commands, Bot
-from discord.ext.commands import Context
+from discord.ext import commands
+from discord.ext.commands import Context, Bot
 
 from dotenv import load_dotenv
 import os

@@ -48,7 +48,7 @@ class PlayersDatabase(Database):
                 P.username = ?;
         """
         self._cursor.execute(query, (player,))
-        result = self._cursor.fetchone()
+        result = self._cursor.fetchone()[0]
         return PlayerStatistics(*result) if result else None
     
     def player_eq(self, player: str) -> List[Item]:
@@ -69,7 +69,8 @@ class PlayersDatabase(Database):
         """
         self._cursor.execute(query, (player,))
         rows = self._cursor.fetchall()
-        return [Item(*row) for row in rows]
+        strings_list = [item[0] for item in rows]
+        return [Item(*row) for row in strings_list]
     
     def get_player_balance(self, player: str) -> int:
         query: str= """
@@ -81,7 +82,7 @@ class PlayersDatabase(Database):
                 username = ?;
         """
         self._cursor.execute(query, (player,))
-        result = self._cursor.fetchone()
+        result = self._cursor.fetchone()[0]
         return result
     
     def update_player_balance(self, player: str, amount: int) -> None:
@@ -91,7 +92,7 @@ class PlayersDatabase(Database):
             WHERE username = ?;
         """
         self._cursor.execute(query, (amount, player))
-        self._connection.commit()
+        self._cursor.connection.commit()
 
     def check_if_player_exists(self, player:str) -> bool:
         query: str= """
@@ -102,8 +103,9 @@ class PlayersDatabase(Database):
         """
         self._cursor.execute(query)
         result: list[str] = self._cursor.fetchall()
+        strings_list = [item[0] for item in result]
         
-        if player in result:
+        if player in strings_list:
             return True
        
         return False
@@ -122,10 +124,10 @@ class PlayersDatabase(Database):
             False,
             0,
             self._starting_gambler_title,
-            datetime.now().isoformat(),
+            datetime.datetime.now().isoformat(),
             25
         ))
-        self._connection.commit()
+        self._cursor.connection.commit()
     
     def get_player_bet(self, player: str) -> int:
         query: str = """
@@ -137,7 +139,7 @@ class PlayersDatabase(Database):
                 username = ?;
         """
         self._cursor.execute(query, (player,))
-        result: int = self._cursor.fetchone()
+        result: int = self._cursor.fetchone()[0]
         return result
 
     def change_player_bet(self, player: str, amount: int) -> None:
@@ -147,7 +149,7 @@ class PlayersDatabase(Database):
             WHERE username = ?;
         """
         self._cursor.execute(query, (amount, player))
-        self._connection.commit()
+        self._cursor.connection.commit()
     
     def get_all_players(self) -> list[str]:
         query: str= """
@@ -158,8 +160,9 @@ class PlayersDatabase(Database):
         """
         self._cursor.execute(query)
         result: list[str] = self._cursor.fetchall()
+        strings_list = [item[0] for item in result]
        
-        return result
+        return strings_list
     
     def check_if_player_received_daily(self, player: str) -> bool:
         query: str= """
@@ -170,7 +173,7 @@ class PlayersDatabase(Database):
             WHERE username = ?
         """
         self._cursor.execute(query, player)
-        result: list[str] = self._cursor.fetchone()
+        result: list[str] = self._cursor.fetchone()[0]
        
         return result
     
@@ -182,7 +185,7 @@ class PlayersDatabase(Database):
         """
 
         self._cursor.execute(query, (value, player))
-        self._connection.commit()
+        self._cursor.connection.commit()
     
        
 

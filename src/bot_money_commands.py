@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord.ext.commands import Context, Bot
 from typing import Optional
 
-from games import Player
+from games.Player import Player
 from database.PlayersDatabase import PlayersDatabase
 db = PlayersDatabase()
 

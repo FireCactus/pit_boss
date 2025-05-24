@@ -15,7 +15,7 @@ class Player:
             db.add_new_player(self.name)
 
     def get_balance(self) -> int:
-        balance: int = db.get_player_balance()
+        balance: int = db.get_player_balance(self.name)
         return balance
 
     def modify_balance(self, amount: int) -> None:
