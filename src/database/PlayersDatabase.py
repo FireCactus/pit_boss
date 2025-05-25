@@ -173,9 +173,9 @@ class PlayersDatabase(Database):
             WHERE username = ?
         """
         self._cursor.execute(query, (player,))
-        result: list[str] = self._cursor.fetchone()[0]
+        result: str = self._cursor.fetchone()[0]
        
-        return result
+        return bool(result)
     
     def change_player_received_daily(self, player: str, value: bool) -> None:
         query: str= """
@@ -186,5 +186,3 @@ class PlayersDatabase(Database):
 
         self._cursor.execute(query, (value, player))
         self._cursor.connection.commit()
-
-db = PlayersDatabase()

@@ -61,7 +61,7 @@ def setup(bot: Bot) -> None:
             string = "---- All players money ----\n"
             for username in db.get_all_players():
                 listed_player: Player = Player(username)
-                string += f"{listed_player.name}   {listed_player.get_balance()}\n--------------------\n"
+                string += f"{listed_player.name}   {listed_player.get_balance()}\n---------------------------n"
             await ctx.send(string)
         else:
             player: Player = Player(user)
