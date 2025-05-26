@@ -99,7 +99,7 @@ class RouletteGame:
 
 
         roulette_color: str = color_table[roulette_pick]
-        roulete_even_odd: str = "Even" if roulette_pick % 2 == 0 else "Odd"
+        roulete_even_odd: str = RouletteOutcomes.EVEN if roulette_pick % 2 == 0 else RouletteOutcomes.ODD
 
         #print roulette result to chat
         await asyncio.sleep(self._delete_gif_after_seconds-3)
