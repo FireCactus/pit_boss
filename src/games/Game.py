@@ -1,34 +1,17 @@
 from typing import *
 from abc import ABC, abstractmethod
-from discord.ext.commands import Context
-from discord import Message
-from enum import StrEnum, auto
 
 
+# all interaction happens outside of this class
+# this class is only used to handle game frames.
 
-class StatisticOperations(StrEnum):
-    ADD = auto()
-    SUBTRACT = auto()
-    SET_TO = auto()
+#move all message functions to a utils class
 
+class Game(ABC):
+    _payout_table: Dict[str,float] # how much to pay out for each scenario
 
-class DiscordGame(ABC):
-    _payout_table: dict[str,float] # how much to pay out for each scenario
-
-    _delete_message_after = 15 # how long before deleting a vanishing message
-    _player_statistics: dict[str,dict[str,GameStatistic]] = {} # game statistics for each player
-    #{          EXAMPLE
-    #    'adam':{'stat_name':0, 'stat_name_2:'5},
-    #     'bob':{'stat_name':1, 'stat_name_2:'1},
-    #
-
-    _tracked_statistics: list[str]    
-
-    def __init__(self, ctx: Context, players_names: list[str]) -> None:
-        self.ctx: Context = ctx # discord context (where to send the messages)
-        self.players: list[str] = players_names
-
-        self.init_game_statistics()
+    def __init__(self) -> None:
+        pass
 
     def init_game_statistics(self) -> None:
         ''' initializes all tracked statistics at 0'''

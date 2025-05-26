@@ -2,6 +2,7 @@ from database.PlayersDatabase import PlayersDatabase
 
 db = PlayersDatabase()
 
+#rename to DiscordPlayer and add encapsulation of ctx.message.author as the input instead of the str username
 class Player:
     _min_bet: int = 25
     _max_bet: int = 1000000000000
