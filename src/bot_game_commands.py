@@ -125,7 +125,7 @@ def setup(bot: Bot) -> None:
         # print the bets
         string: str = "(Change your bet with !bet size [amount])\n"
         for bet in verified_bets:
-            string += f"       -{bet.name} bet: {bet.bet_amount} on {bet.pick.name.lower().title()}\n"
+            string += f"       -{bet.name} bet: {bet.bet_amount} on {bet.pick.value}\n"
 
         string += "------------------------------------------------------------"
         await ctx.send(string, delete_after=info_delete_after_seconds)

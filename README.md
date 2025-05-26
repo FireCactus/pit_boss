@@ -1,16 +1,28 @@
 # CODE STANDARDS
-OOP - keep everything tied to an object where possible
-syntax - func,vars: snake_case, classes: PascalCase
 
-repo structure:
-    src - .py code file
-    src/games - games
-    media - images, gifs, videos
-    etc - env files
-    datahub - databases with player data
-    staticly typed code!!!!
-    
+- **OOP:** Keep everything tied to an object where possible.
+- **Syntax:**  
+  - Functions and variables: `snake_case`  
+  - Classes: `PascalCase`
+- **Typing:** Use statically typed code everywhere!
 
+---
 
-To Launch bot:
- bash start_bot.sh 
+## Repository Structure
+    src/ # Python source code files
+    src/games/ # Game implementations
+    media/ # Images, GIFs, videos
+    etc/ # Environment configuration files
+    datahub/ # Databases with player data
+
+## To Launch Bot
+
+Run the following command in your terminal:
+
+```bash
+bash start_bot.sh
+```
+
+## KURWA TO DO!!!!!!!!!!!!!
+
+We need to do some cleanup and establish general guidelines because the current codebase is all over the place and it’s becoming very difficult to modify or maintain.

@@ -3,7 +3,7 @@ import asyncio
 import random
 import os
 
-from enum import Enum
+from enum import StrEnum, auto
 from typing import Optional, Literal, NamedTuple
 from discord.ext.commands import Context
 from discord import File
@@ -11,12 +11,12 @@ from discord import File
 roulette_gifs_path: str = os.path.join("media", "roulette_gifs")
 
 
-class RouletteOutcomes(str, Enum):
-    GREEN="GREEN"
-    RED="RED"
-    BLACK="BLACK"
-    EVEN="EVEN"
-    ODD="ODD"
+class RouletteOutcomes(StrEnum):
+    GREEN = "green"
+    RED = "red"
+    BLACK = "black"
+    EVEN = "even"
+    ODD = "odd"
 
 
 
