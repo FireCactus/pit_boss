@@ -25,7 +25,7 @@ class Deck:
             raise ValueError(f"No such deck type as: {type}")
 
     def draw_card(self, face_down:bool = True) -> Card:
-        card: Card = self.cards.pop(-1)  # pop from top of tdeck
+        card: Card = self.cards.pop(-1)  # pop from top of the deck
         card.face_down = face_down
         return card
 
