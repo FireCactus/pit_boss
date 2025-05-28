@@ -1,20 +1,10 @@
 from games.cardgames.card_deck import Deck
 from games.cardgames.card import Card
-from typing import Union, Optional
-from discord import Message, User
-from discord.ext.commands import Context
+from typing import *
+import copy
 
 
-import math
-import time
-import discord
-import asyncio
-
-
-def calculate_blackjack_hand_value(cards: Union[list[Card],Card]) -> int:
-
-    if isinstance(cards, Card):
-        cards = [cards]
+def calculate_blackjack_hand_value(cards: list[Card]) -> int:
 
     total_value: int = 0
     aces: int = 0
@@ -38,17 +28,15 @@ def calculate_blackjack_hand_value(cards: Union[list[Card],Card]) -> int:
 
     return total_value
 
+
 class BlackJackHand():
 
-    def __init__(self, bet:int, cards: Optional[list[Card]]=None) -> None:
+    def __init__(self, bet:int, cards: list[Card]) -> None:
         self.bet: int = bet
         self.in_play: bool = True
         
-        self.cards: list[Card] 
-        if cards == None:
-            self.cards = []
-        else:
-            self.cards = cards
+        self.cards: list[Card] = cards
+        self.value: int = calculate_blackjack_hand_value(self.cards)
 
     def stand(self) -> None:
         self.in_play = False
@@ -57,10 +45,20 @@ class BlackJackHand():
         self.bet = self.bet*2
         self.stand()
     
+    def get_card_strings(self) -> list[str]:
+        '''
+        Returns the hand cards in a string format ['A','8','?']
+        '''
+        card_strings: list[str] = []
+        for card in self.cards:
+            card_strings.append(card.get_value())
+        
+        return card_strings
+    
     def is_splittable(self) -> bool:
         if len(self.cards) != 2:
             return False
-        if calculate_blackjack_hand_value(self.cards[0]) != calculate_blackjack_hand_value(self.cards[1]):
+        if calculate_blackjack_hand_value([self.cards[0]]) != calculate_blackjack_hand_value([self.cards[1]]):
             return False
         return True
     
@@ -72,248 +70,171 @@ class BlackJackHand():
 
 class BlackjackPlayer():
 
-
-    def __init__(self, name: str, bet: int, balance:int) -> None:
+    def __init__(self, name: str, bet: int) -> None:
         self.name:str = name
         self.initial_bet: int = bet
-        self.balance:int = balance # used for determining if the user will have enough for splits and doubles
-        self.money_spent_on_actions: int = 0 # how much the users spent on doubling or splitting 
-        self.hands: list[BlackJackHand] = [BlackJackHand(bet)]
+        self.hands: list[BlackJackHand] = [BlackJackHand(bet,[])]
     
     def split_hand(self, hand_pos: int) -> None:
         original_hand: BlackJackHand = self.hands[hand_pos]
+        
         new_hand: BlackJackHand = BlackJackHand(original_hand.bet, [original_hand.cards.pop(-1)])
+        original_hand.value = calculate_blackjack_hand_value(original_hand.cards)
 
         self.hands.append(new_hand)
-        
-
 
 class BlackjackGame:
-    _stand_reaction: str = "❌"
-    _hit_reaction: str = "👆"
-    _split_reaction: str = "↔️"
-    _double_reaction: str = "🔥"
+    _dealer_draws_to: int = 17
+    _shoe_size: int = 6
 
-    _dealer_draws_to = 17
-    _user_decision_timeout = 30
-
-    _payout_table: dict[str, float] = {
+    _payout_table: Dict[str, float] = {
         "normal_win": 2,
-        "draw": 1,
-        "blackjack": 2.5}
+        "blackjack": 2.5
+        }
 
-    def __init__(self, player_list: list[BlackjackPlayer], shoe_size: int = 6):
+    def __init__(self, player_list: list[BlackjackPlayer]):
 
         self.players: list[BlackjackPlayer] = player_list
-        self.shoe: Deck = self.construct_deck(shoe_size)
+        self.shoe: Deck = self.__construct_deck()
 
         self.dealer_cards: list[Card] = []
+        self.__deal_initial_cards()
+        self.dealer_hand_value = calculate_blackjack_hand_value(self.dealer_cards)
 
-    def construct_deck(self, n_decks: int) -> Deck:
-        assert n_decks >= 1
+    def __construct_deck(self) -> Deck:
 
-        shoe: Deck = Deck(type="normal")
-        cards: list[Card] = shoe.cards.copy()
+        assert self._shoe_size >= 1
 
-        if n_decks >= 2:
+        shoe: Deck = Deck(type="aces_only")
+        if self._shoe_size >= 2:
 
-            for i in range(n_decks - 1):
-                shoe.insert(cards)
+            for i in range(self._shoe_size - 1):
+                shoe.insert(Deck(type="aces_only").cards)
 
         shoe.shuffle()
         return shoe
-
-
-    def deal_initial_cards(self) -> None:
+    
+    def __deal_initial_cards(self) -> None:
 
         # give each player a card
         for player in self.players:
-            player.hands[0].cards.append(self.shoe.draw_card(face_down=False))
+            self.hit_player(player)
 
         # give the dealer a card
-        self.dealer_cards.append(self.shoe.draw_card(face_down=False))
+        self.draw_dealer_card()
 
         # give the players their second card
         for player in self.players:
-            player.hands[0].cards.append(self.shoe.draw_card(face_down=False))
+            self.hit_player(player)
 
         # give the dealer the second card face down
         self.dealer_cards.append(self.shoe.draw_card(face_down=True))
 
-    async def play_dealer_discord(self, ctx: Context, blackjack_table: Message) -> None:
-
-        self.dealer_cards[1].face_down = False  # turn over the face down card
-        await self.send_bj_table_to_discord(ctx, blackjack_table)
-        await asyncio.sleep(1)
-
-        while calculate_blackjack_hand_value(self.dealer_cards) < self._dealer_draws_to:
-            await asyncio.sleep(1)
-
-            self.dealer_cards.append(self.shoe.draw_card(face_down=False))
-            await self.send_bj_table_to_discord(ctx, blackjack_table)
-
-        for player in self.players:
-            for hand in player.hands:
-                for card in hand.cards:
-                    if card.face_down == True:
-                        await asyncio.sleep(1)
-                        card.face_down = False
-                        await self.send_bj_table_to_discord(ctx, blackjack_table)
-
-    async def start(self, ctx: Context) -> dict[str, int]:
-        
-        # initial dealing ---------
-        self.deal_initial_cards()
-
-        # check if anyone got a blackjack
-        for player in self.players:
-                total = calculate_blackjack_hand_value(player.hands[0].cards)
-                if total == 21:
-                    player.hands[0].in_play = False
-                    await ctx.send(f"{player.name} got a blackjack!")
-
-        #display the table for the first time
-        blackjack_table: Message = await self.send_bj_table_to_discord(ctx)
-
-        # play with each player
-        for player in self.players:
-            for i, hand in enumerate(player.hands):
-
-                decision: str
-                while hand.in_play:
-                    table = await self.send_bj_table_to_discord(ctx,blackjack_table)
-                    decision = await self.ask_user_for_choice_discord(ctx, player, i)
-
-                    if decision == "hit":
-                        player.hands[i].cards.append(self.shoe.draw_card(face_down=False))
-
-                    elif decision == "stand":
-                        player.hands[i].stand()
-
-                    elif decision == "double":
-                        player.balance -= player.hands[i].bet
-                        player.money_spent_on_actions += player.hands[i].bet
-
-                        player.hands[i].cards.append(self.shoe.draw_card(face_down=True))
-                        player.hands[i].double_down()   
-
-                    elif decision == "split":
-                        player.split_hand(i)
-                        player.balance -= player.hands[i].bet
-                        player.money_spent_on_actions += player.hands[i].bet
-                    
-                    if calculate_blackjack_hand_value(player.hands[i].cards) >= 21:
-                        player.hands[i].in_play = False
-
-
-        # play with the dealer
-        await self.play_dealer_discord(ctx, blackjack_table)
-
-        # check any payouts:
-        winners_table: dict[str,int] = {}
-
-        for player in self.players:
-            winners_table[player.name] =- player.money_spent_on_actions
-        
-
-        dealer_total = calculate_blackjack_hand_value(self.dealer_cards)
-        if dealer_total > 21:
-            for player in self.players:
-                for hand in player.hands:
-                    if calculate_blackjack_hand_value(hand.cards) <= 21:
-                        payout = math.floor(hand.bet * self._payout_table["normal_win"])
-                        winners_table[player.name] += payout
-
-        else:
-            for player in self.players:
-                for hand in player.hands:
-                    hand_value = calculate_blackjack_hand_value(hand.cards)
-
-                    if hand_value > 21:
-                        continue
-
-                    if hand_value > dealer_total:
-                        payout = math.floor(hand.bet * self._payout_table["normal_win"])
-                        winners_table[player.name] += payout
-
-                    elif hand_value == dealer_total:
-                        payout = math.floor(hand.bet * self._payout_table["draw"])
-                        winners_table[player.name] += payout
-
-        return winners_table
     
-
-    async def send_bj_table_to_discord(self, ctx: Context, edit_message: Optional[Message] = None) -> Message:
-        string: str = "----------------------------------------\n"
-        string += f"Dealer: ({calculate_blackjack_hand_value(self.dealer_cards)})\n"
+    def get_current_hands_in_string_form(self) -> Dict[str,list[list[str]]]:
+        hand_dict: Dict[str,list[list[str]]] = {'Dealer': [[]]}
+        
+        #dealer hands
         for card in self.dealer_cards:
-            if card.face_down == False:
-                value = card.get_value()
-                color = card.get_color_emoji()
+            hand_dict['Dealer'][0].append(card.get_value())
 
-                string += f"{value}{color}, "
-            else:
-                string += "[?]\n"
-
-        string += "\n"
+        #player hands
         for player in self.players:
-            string += f"{player.name}:\n"
             for hand in player.hands:
-                for card in hand.cards:
-                    if card.face_down == False:
-                        value = card.get_value()
-                        color = card.get_color_emoji()
-                        string += f"{value}{color}  "
-                    else:
-                        string += "[?]  "
+                if player not in hand_dict:
+                    hand_dict[player.name] = []
+                
+                hand_dict[player.name].append(hand.get_card_strings())
+            
+        return hand_dict
 
-                string += f"-  ({calculate_blackjack_hand_value(hand.cards)})\n"
-
-        message: Message
-        if edit_message == None:
-            message = await ctx.send(string)
-        else:
-            message = await edit_message.edit(content=string)
-        
-        return message
-
-    async def ask_user_for_choice_discord(self, ctx: Context, player: BlackjackPlayer, hand_number: int) -> str:
-
-        message: Message = await ctx.send(
-            f"What do you want to do {player.name}?\nCurrent hand value is {calculate_blackjack_hand_value(player.hands[hand_number].cards)}"
-        )
-
-        await message.add_reaction(self._stand_reaction)
-        await message.add_reaction(self._hit_reaction)
-
-        hand: BlackJackHand = player.hands[hand_number]
-        if player.balance >= hand.bet *2:
-            if hand.is_doubleable():
-                await message.add_reaction(self._double_reaction)
-            if hand.is_splittable():
-                await message.add_reaction(self._split_reaction)
+    def stand_player(self, player: BlackjackPlayer) -> None:
+        for hand in player.hands:
+            if hand.in_play:
+                hand.stand()
+                return None
     
-        start_time: float = time.time()
-        waiting: bool = True
-        action: str = "stand"
+    def hit_player(self, player: BlackjackPlayer) -> None:
+        for hand in player.hands:
+            if hand.in_play == False:
+                continue
+            hand.cards.append(self.shoe.draw_card(face_down=False))
+            hand.value = calculate_blackjack_hand_value(hand.cards)
+            
+            if hand.value >= 21:
+                hand.stand()
+            return None
+                
+    def double_player(self, player: BlackjackPlayer) -> None:
+        for hand in player.hands:
+            if hand.in_play == False:
+                continue
+            hand.cards.append(self.shoe.draw_card(face_down=True))
+            hand.value = calculate_blackjack_hand_value(hand.cards)
+            hand.double_down()
+            return None
+    
+    def split_player(self, player: BlackjackPlayer) -> None:
+        for i, hand in enumerate(player.hands):
+            if hand.in_play == False:
+                continue
+            player.split_hand(i)
+            return None
+    
+    def reveal_player_cards(self, player: BlackjackPlayer) -> None:
+        for hand in player.hands:
+            for card in hand.cards:
+                if card.face_down:
+                    card.turn_over()
+            hand.value = calculate_blackjack_hand_value(hand.cards)
+            
 
-        while waiting and time.time() - start_time <= self._user_decision_timeout:
-            await asyncio.sleep(1.1)
-            message = await ctx.channel.fetch_message(message.id)
+    def reveal_dealer_card(self) -> None:
+        self.dealer_cards[1].turn_over()
+        self.dealer_hand_value = calculate_blackjack_hand_value(self.dealer_cards)
+    
+    def draw_dealer_card(self) -> None:
+        self.dealer_cards.append(self.shoe.draw_card(face_down=False))
+        self.dealer_hand_value = calculate_blackjack_hand_value(self.dealer_cards)
+    
+    
+    def calculate_win_amounts(self) -> Dict[str,int]:
 
-            for reaction in message.reactions:
-                users:list[str] = [str(user) async for user in reaction.users()]
+        win_dict: Dict[str,int] = {}
+        for player in self.players:
+            win_dict[player.name] = 0
+            for hand in player.hands:
+                if hand.value > 21:
+                    continue
+                
+                # natural blackjack 
+                if hand.value == 21 and len(hand.cards) == 2 and len(player.hands) == 1:
+                    if self.dealer_hand_value == 21: #Push
+                        win_dict[player.name] += hand.bet
+                    else: # nat bj payout
+                        win_dict[player.name] += int(hand.bet*self._payout_table['blackjack'])
+                
+                # if dealer busted or has less than the hand
+                elif self.dealer_hand_value > 21 or hand.value > self.dealer_hand_value:
+                    win_dict[player.name] += int(hand.bet*self._payout_table['normal_win'])
+                
+                # if the hand matches the dealer
+                elif self.dealer_hand_value == hand.value:
+                    win_dict[player.name] += hand.bet
+                    #normally we would check if the dealer has a 21 to "push"
+        
+        return win_dict
 
-                if any(str(user) == player.name for user in users):
-                    if reaction.emoji == self._stand_reaction:
-                        action = "stand"
-                    elif reaction.emoji == self._hit_reaction:
-                        action = "hit"
-                    elif reaction.emoji == self._double_reaction:
-                        action = "double"
-                    elif reaction.emoji == self._split_reaction:
-                        action = "split"
-                    waiting = False
+                
 
-        await message.delete()
-        return action
+                    
+
+                     
+
+                
+
+                
+    
+
+
+

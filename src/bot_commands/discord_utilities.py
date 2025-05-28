@@ -1,15 +1,24 @@
-from discord.ext.commands import Context
-from discord import Message
+import time
 import asyncio
-from ayncio import Coroutine
-from typing import NamedTuple
+import discord
+
+from collections.abc import Coroutine
+from discord.ext.commands import Context
+from discord import Message, User, Reaction
+
+from typing import *
 
 
-async def send_vanishing_message(context: Context, string: str) -> Message:
+
+
+vanishing_message_timer: int = 15
+ask_message_timeout: int = 45
+
+async def send_vanishing_message(context: Context, string: str, time_to_vanish: int=vanishing_message_timer) -> Message:
     ''' 
     Sends a text message through discord that will delete after _delete_message_after and returns the message object
     '''
-    return await context.send(string, delete_after=self._delete_message_after)
+    return await context.send(string, delete_after=time_to_vanish)
 
 
 async def send_persistant_message(context: Context, string: str) -> Message:
@@ -35,8 +44,9 @@ async def delete_message(message: Message) -> None:
     except discord.NotFound:
         pass #if failed to delete a message because it doesnt exist then dont throw an error
 
-async def refresh_message(context: Context, message: Message) -> Message:
-    return await context.channel.fetch_message(message.id)
+async def refresh_message(message: Message) -> Message:
+    return await message.channel.fetch_message(message.id)
+
 
 async def add_reactions_to_message(message: Message, reactions: list[str]) -> None:
     tasks: list[Coroutine[None, None, None]] = []
@@ -46,11 +56,11 @@ async def add_reactions_to_message(message: Message, reactions: list[str]) -> No
     await asyncio.gather(*tasks)
 
 
-async def get_user_reactions_on_message(message: Message) -> dict[str, list[str]]:
+async def get_user_reactions_on_message(message: Message) -> Dict[str, list[str]]:
     # this method can only fetch one message reaction at a time so it can be slow with multiple reactions
     # its upside is that it will be harder to hit discords api limit
 
-    user_reactions: dict[str, list[str]] = {}
+    user_reactions: Dict[str, list[str]] = {}
     for reaction in message.reactions:
         try:
             async for user in reaction.users():
@@ -67,13 +77,13 @@ async def get_user_reactions_on_message(message: Message) -> dict[str, list[str]
 
 
 
-async def get_user_reactions_on_message_parralelized(message: Message) -> dict[str, list[str]]:
+async def get_user_reactions_on_message_parralelized(message: Message) -> Dict[str, list[str]]:
     # 'better' version of get_user_reactions_on_message. grabs all reaction users in parralel. good for making responsive stuff
     # be aware of discords api call limit when using
     
-    user_reactions: dict[str, set[str]] = {}
+    user_reactions: Dict[str, set[str]] = {}
 
-    async def fetch_users_for_reaction(reaction):
+    async def fetch_users_for_reaction(reaction: Reaction) -> None:
         try:
             async for user in reaction.users():
                 if user.bot:
@@ -86,16 +96,44 @@ async def get_user_reactions_on_message_parralelized(message: Message) -> dict[s
     return {u: list(rs) for u, rs in user_reactions.items()}
 
 
-async def send_standard_join_game_message(context: Context, message_text: str, reactions: list[str], retrieve_after_sec: int) -> dict[str, list[str]]:
+async def send_standard_join_game_message(context: Context, message_text: str, reactions: list[str], retrieve_after_sec: int) -> Dict[str, list[str]]:
     '''
     Sends the 'games starts in x seconds, click reaction to join' message and after a delay returns who clicked what reaction
     '''
     
     join_message_delete_offset: int = 5 # gives time for the bot to gather the reactions before deleting the message
 
-    join_message: Message = send_vanishing_message(context, message_text, retrieve_after_sec+join_message_delete_offset)
-    add_reactions_to_message(join_message, reactions)
+    join_message: Message = await send_vanishing_message(context, message_text, retrieve_after_sec+join_message_delete_offset)
+    await add_reactions_to_message(join_message, reactions)
     await asyncio.sleep(retrieve_after_sec)
-    join_message = refresh_message(join_message)
 
-    return get_user_reactions_on_message(join_message)
+    join_message = await refresh_message(join_message)
+    return await get_user_reactions_on_message(join_message)
+
+async def send_message_and_wait_for_user_choice(context: Context, message_text: str, reactions: list[str], user: str, timeout: int=ask_message_timeout) -> Optional[str]:
+    '''
+        Creates a message and adds reactions to it.
+        if a designated player has clicked any of the reactions returns the reaction (string).
+        if the designated player failed to click any reaction within the timeout it returns None
+    '''
+
+    ask_message: Message = await send_persistant_message(context, message_text)
+    await add_reactions_to_message(ask_message, reactions)
+
+    start_time: float = time.time()
+    while time.time() - start_time < timeout:
+        await asyncio.sleep(1) # wait a second between message checks
+        ask_message = await refresh_message(ask_message)
+        
+        reaction_users: Dict[str, list[str]] = await get_user_reactions_on_message(ask_message)
+        if user in reaction_users.keys():
+            if reaction_users[user][0] in reactions:
+                await delete_message(ask_message)
+                return reaction_users[user][0] # return the first one if user clicked many
+    
+
+    await delete_message(ask_message)
+    return None
+
+
+

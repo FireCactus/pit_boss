@@ -20,6 +20,14 @@ class Deck:
 
         elif type == "empty":
             self.cards = []
+        
+        elif type == "aces_only":
+
+            self.cards = []
+
+            for i in range(52):
+                card: Card = Card("A", "Hearts")
+                self.cards.append(card)
 
         else:
             raise ValueError(f"No such deck type as: {type}")
