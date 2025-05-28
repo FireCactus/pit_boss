@@ -112,8 +112,8 @@ def setup(bot: Bot) -> None:
                 bet: RouletteBet = RouletteBet(name=player.name, bet_amount=player.get_player_bet(), pick=pick)
                 roulette_bets.append(bet)
                 
-        if started_by_user:
-            await message.delete()  # remove starting message
+
+        await message.delete()  # remove starting message
 
         # Check if any player cannot afford the bet they made and make them pay 
         verified_bets: list[RouletteBet] = []
