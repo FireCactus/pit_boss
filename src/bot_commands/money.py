@@ -48,7 +48,7 @@ def setup(bot: Bot) -> None:
 
         from_player.modify_balance(-amount)
         to_player.modify_balance(amount)
-        await ctx.send(f"Transferred {amount} from {from_player.name} to {from_player.name}",delete_after=info_delete_after_seconds)
+        await ctx.send(f"Transferred {amount} from {from_player.name} to {to_player.name}",delete_after=info_delete_after_seconds)
         
         
     @bot.command("balance")

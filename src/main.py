@@ -7,8 +7,7 @@ from discord.ext.commands import Context, Bot
 from dotenv import load_dotenv
 import os
 
-import bot_game_commands
-import bot_money_commands
+from bot_commands import games, money
 
 #load .env file
 load_dotenv(dotenv_path="etc/.env")
@@ -20,8 +19,8 @@ intents.messages = True
 intents.guilds = True
 
 bot: Bot = Bot(command_prefix='!', intents=intents, help_command=None)
-bot_game_commands.setup(bot) # import commands from other files
-bot_money_commands.setup(bot)
+games.setup(bot) # import commands from other files
+money.setup(bot)
 
 info_delete_after_seconds: int = 30
 
