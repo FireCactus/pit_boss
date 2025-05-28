@@ -6,6 +6,7 @@ import asyncio
 from games.Player import Player
 from games.roulette.RouletteGame import RouletteGame, RouletteBet, RouletteOutcomes
 from games.cardgames.blackjack.BlackjackGame import BlackjackGame, BlackjackPlayer
+from bot_commands.discord_utilities import * 
 
 odd_reaction: str = "1️⃣"
 even_reaction: str = "2️⃣"
