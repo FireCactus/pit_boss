@@ -1,4 +1,4 @@
-#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON DELETE/UPDATE
 id                      INTEGER         "PRIMARY KEY"           players(id)
 current_lose_streak     INTEGER
 current_win_streak      INTEGER
