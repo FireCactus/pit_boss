@@ -1,4 +1,4 @@
 #COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON DELETE/UPDATE
 id                      INTEGER         "PRIMARY KEY"             
-player_discord_id       INTEGER         ""                      players(discord_id)
+player_id               INTEGER         ""                      players(id)
 achievement_id          INTEGER                                 

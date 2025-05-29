@@ -1,5 +1,5 @@
 #COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON
-id                      INTEGER         "PRIMARY KEY"           players(discord_id)
+id                      INTEGER         "PRIMARY KEY"           players(id)
 natural_blackjacks      INTEGER
 money_lost              INTEGER
 money_won               INTEGER
