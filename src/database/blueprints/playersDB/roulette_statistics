@@ -1,5 +1,5 @@
 #COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
-id                      INTEGER         "PRIMARY KEY"           players(id)
+id                      INTEGER         "PRIMARY KEY"           players(discord_id)
 green_won               INTEGER
 red_won                 INTEGER
 black_won               INTEGER

@@ -1,6 +1,6 @@
 #COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
-id                      INTEGER         "PRIMARY KEY"
-username                TEXT
+discord_id              INTEGER         "PRIMARY KEY"
+display_name            TEXT
 balance                 INTEGER
 received_daily          BOOLEAN
 exp                     INTEGER

@@ -1,6 +1,6 @@
 #COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
 id                      INTEGER         "PRIMARY KEY"             
-player_id               INTEGER         ""                      players(id)
+player_discord_id       INTEGER         ""                      players(discord_id)
 amount                  INTEGER
 end_date                DATETIME
 interest                FLOAT

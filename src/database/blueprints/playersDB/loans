@@ -1,7 +1,7 @@
 #COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
 id                      INTEGER         "PRIMARY KEY"
-loaner                  INTEGER         ""                      players(id)
-loanee                  INTEGER         ""                      players(id)
+loaner                  INTEGER         ""                      players(discord_id)
+loanee                  INTEGER         ""                      players(discord_id)
 amount                  INTEGER
 expire_date             DATETIME
 interest                FLOAT

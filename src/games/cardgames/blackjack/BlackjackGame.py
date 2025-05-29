@@ -70,8 +70,9 @@ class BlackJackHand():
 
 class BlackjackPlayer():
 
-    def __init__(self, name: str, bet: int) -> None:
+    def __init__(self, name: str, discord_id: int, bet: int) -> None:
         self.name:str = name
+        self.discord_id: int = discord_id
         self.initial_bet: int = bet
         self.hands: list[BlackJackHand] = [BlackJackHand(bet,[])]
     
@@ -198,11 +199,11 @@ class BlackjackGame:
         self.dealer_hand_value = calculate_blackjack_hand_value(self.dealer_cards)
     
     
-    def calculate_win_amounts(self) -> Dict[str,int]:
+    def calculate_win_amounts(self) -> Dict[BlackjackPlayer,int]:
 
-        win_dict: Dict[str,int] = {}
+        win_dict: Dict[BlackjackPlayer,int] = {}
         for player in self.players:
-            win_dict[player.name] = 0
+            win_dict[BlackjackPlayer] = 0
             for hand in player.hands:
                 if hand.value > 21:
                     continue
