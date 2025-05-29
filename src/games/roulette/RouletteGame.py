@@ -5,6 +5,7 @@ import os
 
 from enum import StrEnum, auto
 from typing import *
+from typing import *
 from discord.ext.commands import Context
 from discord import File
 
@@ -19,6 +20,7 @@ class RouletteOutcomes(StrEnum):
     ODD = "odd"
 
 
+color_table: dict[int,RouletteOutcomes] ={
 color_table: dict[int,RouletteOutcomes] ={
     0: RouletteOutcomes.GREEN,
     1: RouletteOutcomes.RED,
@@ -62,6 +64,7 @@ color_table: dict[int,RouletteOutcomes] ={
 
 class RouletteBet(NamedTuple):
     name: str
+    discord_id:int
     bet_amount: int
     pick: RouletteOutcomes 
 
@@ -83,35 +86,49 @@ class RouletteGame:
         self.rolled_parity: Optional[RouletteOutcomes] = None
 
     def spin_the_wheel(self) -> None:
+
+    def __init__(self, bets: list[RouletteBet]) -> None:
+        self.bets: list[RouletteBet] = bets
+
+        self.rolled_number: Optional[int] = None
+        self.rolled_color: Optional[RouletteOutcomes] = None
+        self.rolled_parity: Optional[RouletteOutcomes] = None
+
+    def spin_the_wheel(self) -> None:
         roulette_pick: int = random.randint(0,36)
 
         self.rolled_number = roulette_pick
         self.rolled_color = color_table[roulette_pick]
         self.rolled_parity =  RouletteOutcomes.EVEN if roulette_pick % 2 == 0 else RouletteOutcomes.ODD
 
+        self.rolled_number = roulette_pick
+        self.rolled_color = color_table[roulette_pick]
+        self.rolled_parity =  RouletteOutcomes.EVEN if roulette_pick % 2 == 0 else RouletteOutcomes.ODD
+
     
-    def calculate_win_amounts(self) -> Dict[str,int]:
-        win_dict: Dict[str,int] = {}
+    def calculate_win_amounts(self) -> Dict[int,int]:
+        win_dict: Dict[int,int] = {}
         for bet in self.bets:
-            if bet.name not in win_dict.keys():
-                win_dict[bet.name] = 0
+            if bet.discord_id not in win_dict.keys():
+                win_dict[bet.discord_id] = 0
 
             # if bet on even/odd and was correct
             if bet.pick in [RouletteOutcomes.EVEN, RouletteOutcomes.ODD] and self.rolled_parity == bet.pick:
-                win_dict[bet.name] += int(bet.bet_amount * self._payout_table['even_odd_payout'])
+                win_dict[bet.discord_id] += int(bet.bet_amount * self._payout_table['even_odd_payout'])
             
             # if bet on red/black and was correct
             elif bet.pick in [RouletteOutcomes.RED, RouletteOutcomes.BLACK] and self.rolled_color == bet.pick:
-                win_dict[bet.name] += int(bet.bet_amount * self._payout_table['red_black_payout'])
+                win_dict[bet.discord_id] += int(bet.bet_amount * self._payout_table['red_black_payout'])
 
             # if bet on green and was correct
             elif bet.pick == RouletteOutcomes.GREEN and self.rolled_color == bet.pick:
-                win_dict[bet.name] += int(bet.bet_amount * self._payout_table['correct_green_guess'])
+                win_dict[bet.discord_id] += int(bet.bet_amount * self._payout_table['correct_green_guess'])
 
             # if bet on anything other than green and green was the result
             elif bet.pick != RouletteOutcomes.GREEN and self.rolled_color == RouletteOutcomes.GREEN:
-                win_dict[bet.name] += int(bet.bet_amount * self._payout_table['green_when_not_chosen'])
+                win_dict[bet.discord_id] += int(bet.bet_amount * self._payout_table['green_when_not_chosen'])
         
         return win_dict
             
+
 

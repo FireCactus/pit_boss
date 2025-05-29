@@ -31,73 +31,33 @@ class PlayersDatabase(Database):
         super().__init__(name="playersDB")
         self._cursor = sqlite3.connect(f"{Loc.datahub(self._name)}.db").cursor()
 
-    def player_statistics(self, player: str) -> Optional[PlayerStatistics]:
-        query: str= """
-            SELECT 
-                S.current_lose_streak,
-                S.current_win_streak,
-                S.highest_lose_streak,
-                S.highest_win_streak,
-                S.money_lost,
-                S.money_won
-            FROM 
-                players P
-            JOIN 
-                statistics S ON P.id = S.id
-            WHERE 
-                P.username = ?;
-        """
-        self._cursor.execute(query, (player,))
-        result = self._cursor.fetchone()[0]
-        return PlayerStatistics(*result) if result else None
     
-    def player_eq(self, player: str) -> List[Item]:
-        query: str= """
-            SELECT 
-                I.name,
-                I.type,
-                I.picture,
-                I.object
-            FROM 
-                EQ E
-            JOIN 
-                ITEMS I ON E.item_id = I.id
-            JOIN 
-                PLAYERS P ON E.player_id = P.id
-            WHERE 
-                P.username = ?;
-        """
-        self._cursor.execute(query, (player,))
-        rows = self._cursor.fetchall()
-        strings_list = [item[0] for item in rows]
-        return [Item(*row) for row in strings_list]
-    
-    def get_player_balance(self, player: str) -> int:
+    def get_player_balance(self, discord_id: int) -> int:
         query: str= """
             SELECT 
                 balance
             FROM 
                 players
             WHERE 
-                username = ?;
+                discord_id = ?;
         """
-        self._cursor.execute(query, (player,))
+        self._cursor.execute(query, (discord_id,))
         result = self._cursor.fetchone()[0]
         return result
     
-    def update_player_balance(self, player: str, amount: int) -> None:
+    def update_player_balance(self, discord_id: int, amount: int) -> None:
         query: str= """
             UPDATE players
             SET balance = balance + ?
-            WHERE username = ?;
+            WHERE discord_id = ?;
         """
-        self._cursor.execute(query, (amount, player))
+        self._cursor.execute(query, (amount, discord_id))
         self._cursor.connection.commit()
 
-    def check_if_player_exists(self, player:str) -> bool:
+    def check_if_player_exists(self, discord_id:int) -> bool:
         query: str= """
             SELECT 
-                username
+                discord_id
             FROM 
                 players
         """
@@ -105,21 +65,23 @@ class PlayersDatabase(Database):
         result: list[str] = self._cursor.fetchall()
         strings_list = [item[0] for item in result]
         
-        if player in strings_list:
+        if discord_id in strings_list:
             return True
        
         return False
     
 
-    def add_new_player(self, player: str) -> None:
+    def add_new_player(self, discord_id: int, display_name:str) -> None:
+
 
 
         query: str= """
-            INSERT INTO PLAYERS (username, balance, received_daily, exp, title, last_interaction_time, bet)
-        VALUES (?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO PLAYERS (discord_id, display_name, balance, received_daily, exp, title, last_interaction_time, bet)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         """
         self._cursor.execute(query, (
-            player,
+            discord_id,
+            display_name,
             self._welcome_money,
             False,
             0,
@@ -129,32 +91,32 @@ class PlayersDatabase(Database):
         ))
         self._cursor.connection.commit()
     
-    def get_player_bet(self, player: str) -> int:
+    def get_player_bet(self, discord_id: int) -> int:
         query: str = """
             SELECT 
                 bet
             FROM 
                 players
             WHERE 
-                username = ?;
+                discord_id = ?;
         """
-        self._cursor.execute(query, (player,))
+        self._cursor.execute(query, (discord_id,))
         result: int = self._cursor.fetchone()[0]
         return result
 
-    def change_player_bet(self, player: str, amount: int) -> None:
+    def change_player_bet(self, discord_id: int, amount: int) -> None:
         query: str= """
             UPDATE players
             SET bet = ?
-            WHERE username = ?;
+            WHERE discord_id = ?;
         """
-        self._cursor.execute(query, (amount, player))
+        self._cursor.execute(query, (amount, discord_id))
         self._cursor.connection.commit()
     
     def get_all_players(self) -> list[str]:
         query: str= """
             SELECT 
-                username
+                discord_id
             FROM 
                 players
         """
@@ -164,27 +126,49 @@ class PlayersDatabase(Database):
        
         return strings_list
     
-    def check_if_player_received_daily(self, player: str) -> bool:
+    def check_if_player_received_daily(self, discord_id: int) -> bool:
         query: str= """
             SELECT 
                 received_daily  
             FROM 
                 players
-            WHERE username = ?
+            WHERE discord_id = ?
         """
-        self._cursor.execute(query, (player,))
+        self._cursor.execute(query, (discord_id,))
         result: str = self._cursor.fetchone()[0]
        
         return bool(result)
     
-    def change_player_received_daily(self, player: str, value: bool) -> None:
+    def change_player_received_daily(self, discord_id: int, value: bool) -> None:
         query: str= """
             UPDATE players
             SET received_daily = ?
-            WHERE username = ?;
+            WHERE discord_id = ?;
         """
 
-        self._cursor.execute(query, (value, player))
+        self._cursor.execute(query, (value, discord_id))
         self._cursor.connection.commit()
 
-db = PlayersDatabase()
+    def save_item_to_player_inventory(self, discord_id: int, pickle_path: str) -> None:
+        query: str= """
+        INSERT INTO items
+        (object)
+        VALUES (?);
+
+        INSERT INTO eq
+        (player_discord_id, item_id)
+        VALUES (?,last_insert_rowid());
+        """
+
+        self._cursor.execute(query, (pickle_path, discord_id))
+        self._cursor.connection.commit()
+
+    def delete_item_from_player_inventory(self, pickle_path: str) -> None:
+        
+        query: str= """
+        DELETE FROM items
+        WHERE object=?;
+        """
+
+        self._cursor.execute(query, (pickle_path))
+        self._cursor.connection.commit()
