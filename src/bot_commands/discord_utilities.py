@@ -4,7 +4,7 @@ import discord
 
 from collections.abc import Coroutine
 from discord.ext.commands import Context
-from discord import Message, User, Reaction
+from discord import Message, User, Reaction, File
 
 from typing import *
 
@@ -26,6 +26,17 @@ async def send_persistant_message(context: Context, string: str) -> Message:
     Sends a text persistant message through discord nad returns the message object
     '''
     return await context.send(string)
+
+
+async def send_persistant_file_by_path(context: Context, path: str) -> Message:
+    with open(path, 'rb') as f:
+        file: File = discord.File(f)
+        await context.send(file=file)
+
+async def send_vanishing_file_by_path(context: Context, path: str, time_to_vanish:int=vanishing_message_timer) -> Message:
+    with open(path, 'rb') as f:
+        file: File = discord.File(f)
+        await context.send(file=file, delete_after=time_to_vanish)
 
 
 async def edit_message(message: Message, string: str) -> Message:
@@ -74,7 +85,6 @@ async def get_user_reactions_on_message(message: Message) -> Dict[str, list[str]
             print(f"Error fetching users for reaction {reaction}: {e}")
 
     return user_reactions
-
 
 
 async def get_user_reactions_on_message_parralelized(message: Message) -> Dict[str, list[str]]:
