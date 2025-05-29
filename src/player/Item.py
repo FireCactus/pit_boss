@@ -3,8 +3,11 @@ from typing import *
 import pickle
 import asyncio
 import os
+import uuid
+
 from player import Player
 from utils.Loc import Loc
+
 
 class ItemRepresentation(NamedTuple):
     emoji: Optional[str]
@@ -17,7 +20,7 @@ class Item(ABC):
     __uuid: str
     __uses_left: int
     __name: str
-    __representaion: Representation
+    __representaion: ItemRepresentation
 
     def __init__(self, name: str, representation: ItemRepresentation, uses_left: int = 1) -> None:
         self.__name = name
@@ -33,7 +36,7 @@ class Item(ABC):
 
         filepath: str = self.get_filepath()
         with open(filepath, "wb") as f:
-            pickle.dump(self)
+            pickle.dump(self, f)
 
         return filepath
     

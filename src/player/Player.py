@@ -1,7 +1,7 @@
 from database.PlayersDatabase import PlayersDatabase
 from player import Item
 import asyncio
-from discord import User,
+from discord import User
 
 db = PlayersDatabase()
 
@@ -56,11 +56,11 @@ class Player:
             db.change_player_received_daily(self.discord_id, True)
             self.modify_balance(self._daily_amount)
 
-    def save_item_to_inventory(self, item: Item) -> None:
+    async def save_item_to_inventory(self, item: Item) -> None:
         await item.save_to_disk()
         db.save_item_to_player_inventory(self.discord_id, item.get_filepath())
 
-    def delete_item_from_inventory(self, item: Item) -> None:
+    async def delete_item_from_inventory(self, item: Item) -> None:
         db.delete_item_from_player_inventory(item.get_filepath())
         await item.delete_from_disk()
         
