@@ -6,7 +6,7 @@ db = PlayersDatabase()
 class Player:
     _min_bet: int = 25
     _max_bet: int = 1000000000000
-    _daily_amount: int = 75
+    _daily_amount: int = 100
     
     def __init__(self, name: str) -> None:
         self.name: str = name
