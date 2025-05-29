@@ -1,4 +1,4 @@
-#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON DELETE/UPDATE
 id                      INTEGER         "PRIMARY KEY"           players(id)
 green_won               INTEGER
 red_won                 INTEGER

@@ -6,12 +6,16 @@ from collections import defaultdict, deque
 from utils.Loc import Loc
 from utils.Files import Files
 
+class Action(NamedTuple):
+    delete: Optional[str]
+    update: Optional[str]
 
 class TableColumnScheme(NamedTuple):
     name: str
     type: str
-    restricions: Optional[str]
+    restricions: Optional[List[str]]
     relation: Optional[str]
+    on_action: Optional[Action]
 
 class TableScheme(NamedTuple):
     name: str
@@ -22,6 +26,8 @@ class DatabaseScheme(NamedTuple):
 
 class InvalidBlueprint(Exception):
     pass
+
+VALID_ACTIONS = {"CASCADE", "SET NULL", "SET DEFAULT", "RESTRICT", "NO ACTION"}
 
 @final
 class BlueprintCompiler:
@@ -53,16 +59,31 @@ class BlueprintCompiler:
             if len(parts) < 2:
                 raise InvalidBlueprint(f"Invalid blueprint line in: {file_path} → '{line}'")
 
-            name = parts[0]
-            col_type = parts[1]
-            restrictions = parts[2].strip('"') if len(parts) > 2 and parts[2] else None
-            relation = parts[3] if len(parts) > 3 and parts[3] else None
+            name: str = parts[0]
+            col_type: str = parts[1]
+            restrictions: Optional[List[str]] = parts[2].strip('"').split(',') if len(parts) > 2 and parts[2] else None
+            relation: Optional[str] = parts[3] if len(parts) > 3 and parts[3] else None
+            actions: Optional[List[str]] = parts[4].strip('"').split('/') if len(parts) > 4 and parts[4] else None
+            
+            on_action: Optional[Action]
+            if actions is not None:
+                delete: Optional[str] = self._validate_action(actions[0]) if len(actions) > 0 else None
+                update: Optional[str] = self._validate_action(actions[1]) if len(actions) > 1 else None
+                on_action = Action(delete, update)
+            else:
+                on_action = None
+            
 
-            cols.append(TableColumnScheme(name, col_type, restrictions, relation))
+            cols.append(TableColumnScheme(name, col_type, restrictions, relation, on_action))
 
         table_name = os.path.splitext(os.path.basename(file_path))[0]
         return TableScheme(name=table_name, columns=cols)
     
+
+    def _validate_action(self, a: Optional[str]) -> Optional[str]:
+        if a and a.upper() not in VALID_ACTIONS:
+            raise InvalidBlueprint(f"Invalid ON DELETE/UPDATE action: {a}")
+        return a.upper() if a else None
 
     def __topological_sort_tables(self, tables: List[TableScheme]) -> List[TableScheme]:
         table_map: Dict[str, TableScheme] = {table.name: table for table in tables}

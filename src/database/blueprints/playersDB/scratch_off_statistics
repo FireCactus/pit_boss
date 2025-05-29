@@ -1,4 +1,4 @@
-#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON DELETE/UPDATE
 id                      INTEGER         "PRIMARY KEY"
 scratch_off_id          INTEGER         ""                      scratch_offs(id)
 tickets_bought          INTEGER

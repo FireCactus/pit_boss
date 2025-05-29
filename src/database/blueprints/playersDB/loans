@@ -1,4 +1,4 @@
-#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON DELETE/UPDATE
 id                      INTEGER         "PRIMARY KEY"
 loaner                  INTEGER         ""                      players(id)
 loanee                  INTEGER         ""                      players(id)

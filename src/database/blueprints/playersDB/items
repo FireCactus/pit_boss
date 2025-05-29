@@ -1,5 +1,5 @@
-#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
-id                      INTEGER         "PRIMARY KEY"           eq(item_id)
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON DELETE/UPDATE
+id                      INTEGER         "PRIMARY KEY"           eq(item_id)               "CASCADE"
 name                    TEXT
 type                    TEXT
 picture                 TEXT
