@@ -33,7 +33,7 @@ async def help(ctx: Context) -> None:
     await du.delete_message(ctx.message)
     
     command_list: list[str] = [
-        f"!daily -> Gives you a daily reward of 75 (renewable at midnight)",
+        f"!daily -> Gives you a daily reward of 100 (renewable at midnight)",
         f"!balance -> Returns your current balance",
         f"!balance all -> Returns the balances of all players",
         f"!blackjack -> Starts a blackjack game",
