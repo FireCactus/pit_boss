@@ -21,7 +21,7 @@ class Player:
 
         # Add player to db if doesnt exist
         if db.check_if_player_exists(self.discord_id) == False:
-            db.add_new_player(self.discord_id)
+            db.add_new_player(self.discord_id, self.display_name)
         
         
 

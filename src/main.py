@@ -47,7 +47,7 @@ async def help(ctx: Context) -> None:
     for command in command_list:
         string += command + "\n"
     string += "-----------------------------------------------------------"
-    await du.send_vanishing_message(string, info_delete_after_seconds)
+    await du.send_vanishing_message(ctx, string, info_delete_after_seconds)
 
 
 if __name__ == "__main__":
