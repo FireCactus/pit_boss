@@ -1,6 +1,6 @@
 #COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON DELETE/UPDATE
-discord_id              INTEGER         "PRIMARY KEY"
-display_name            TEXT
+id                      INTEGER         "PRIMARY KEY"
+username                TEXT
 balance                 INTEGER
 received_daily          BOOLEAN
 exp                     INTEGER

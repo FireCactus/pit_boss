@@ -3,7 +3,7 @@ import asyncio
 import discord
 
 from collections.abc import Coroutine
-from discord.ext.commands import Context, Bot
+from discord.ext.commands import Context
 from discord import Message, User, Reaction, File
 
 from typing import *
@@ -67,38 +67,38 @@ async def add_reactions_to_message(message: Message, reactions: list[str]) -> No
     await asyncio.gather(*tasks)
 
 
-async def get_user_reactions_on_message(message: Message) -> Dict[User, list[str]]:
+async def get_user_reactions_on_message(message: Message) -> Dict[str, list[str]]:
     # this method can only fetch one message reaction at a time so it can be slow with multiple reactions
     # its upside is that it will be harder to hit discords api limit
 
-    user_reactions: Dict[User, list[str]] = {}
+    user_reactions: Dict[str, list[str]] = {}
     for reaction in message.reactions:
         try:
             async for user in reaction.users():
                 if user.bot:
                     continue  # Skip bot reactions
                 if user.name not in user_reactions:
-                    user_reactions[user] = [] # add entry if missing
+                    user_reactions[user.name] = [] # add entry if missing
 
-                user_reactions[user].append(str(reaction.emoji))
+                user_reactions[user.name].append(str(reaction.emoji))
         except Exception as e:
             print(f"Error fetching users for reaction {reaction}: {e}")
 
     return user_reactions
 
 
-async def get_user_reactions_on_message_parralelized(message: Message) -> Dict[User, list[str]]:
+async def get_user_reactions_on_message_parralelized(message: Message) -> Dict[str, list[str]]:
     # 'better' version of get_user_reactions_on_message. grabs all reaction users in parralel. good for making responsive stuff
     # be aware of discords api call limit when using
     
-    user_reactions: Dict[User, set[str]] = {}
+    user_reactions: Dict[str, set[str]] = {}
 
     async def fetch_users_for_reaction(reaction: Reaction) -> None:
         try:
             async for user in reaction.users():
                 if user.bot:
                     continue
-                user_reactions.setdefault(user, set()).add(str(reaction.emoji))
+                user_reactions.setdefault(user.name, set()).add(str(reaction.emoji))
         except Exception as e:
             print(f"Error fetching users for reaction {reaction}: {e}")
 
@@ -106,7 +106,7 @@ async def get_user_reactions_on_message_parralelized(message: Message) -> Dict[U
     return {u: list(rs) for u, rs in user_reactions.items()}
 
 
-async def send_standard_join_game_message(context: Context, message_text: str, reactions: list[str], retrieve_after_sec: int) -> Dict[User, list[str]]:
+async def send_standard_join_game_message(context: Context, message_text: str, reactions: list[str], retrieve_after_sec: int) -> Dict[str, list[str]]:
     '''
     Sends the 'games starts in x seconds, click reaction to join' message and after a delay returns who clicked what reaction
     '''
@@ -120,7 +120,7 @@ async def send_standard_join_game_message(context: Context, message_text: str, r
     join_message = await refresh_message(join_message)
     return await get_user_reactions_on_message(join_message)
 
-async def send_message_and_wait_for_user_choice(context: Context, message_text: str, reactions: list[str], user: User, timeout: int=ask_message_timeout) -> Optional[str]:
+async def send_message_and_wait_for_user_choice(context: Context, message_text: str, reactions: list[str], user: str, timeout: int=ask_message_timeout) -> Optional[str]:
     '''
         Creates a message and adds reactions to it.
         if a designated player has clicked any of the reactions returns the reaction (string).
@@ -135,7 +135,7 @@ async def send_message_and_wait_for_user_choice(context: Context, message_text: 
         await asyncio.sleep(1) # wait a second between message checks
         ask_message = await refresh_message(ask_message)
         
-        reaction_users: Dict[User, list[str]] = await get_user_reactions_on_message(ask_message)
+        reaction_users: Dict[str, list[str]] = await get_user_reactions_on_message(ask_message)
         if user in reaction_users.keys():
             if reaction_users[user][0] in reactions:
                 await delete_message(ask_message)
@@ -145,7 +145,5 @@ async def send_message_and_wait_for_user_choice(context: Context, message_text: 
     await delete_message(ask_message)
     return None
 
-async def get_discord_user_from_id(bot: Bot ,discord_id: int) -> User:
-    return await bot.fetch_user(discord_id)
 
 

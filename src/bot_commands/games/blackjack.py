@@ -4,7 +4,7 @@ from discord.ext.commands import Context, Bot
 from typing import *
 import asyncio
 
-from player.Player import Player
+from games.Player import Player
 from games.cardgames.blackjack.BlackjackGame import BlackjackGame, BlackjackPlayer
 from bot_commands import discord_utilities as du 
 
@@ -66,17 +66,17 @@ def setup(bot: Bot) -> None:
         start_text: str = f"Starting blackjack game in {start_game_countdown} seconds!\nClick the emoji to join"
         
         bj_players: list[BlackjackPlayer] = []
-        for user in await du.send_standard_join_game_message(ctx, start_text, join_bj_game_reaction, start_game_countdown):
-            player = Player(user)
+        for username in await du.send_standard_join_game_message(ctx, start_text, join_bj_game_reaction, start_game_countdown):
+            player = Player(username)
             balance: int = player.get_balance()
             bet: int = player.get_player_bet()
 
             if bet > balance:
-                poor_text = f"Sorry {player.display_name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]"
+                poor_text = f"Sorry {player.name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]"
                 await du.send_vanishing_message(ctx, poor_text)
             else:
                 player.modify_balance(-bet)
-                bj_player: BlackjackPlayer = BlackjackPlayer(player.display_name, player.discord_id, bet)
+                bj_player: BlackjackPlayer = BlackjackPlayer(player.name, bet)
                 bj_players.append(bj_player)
         
         if len(bj_players) == 0:
@@ -87,8 +87,7 @@ def setup(bot: Bot) -> None:
         table_message: Message = await send_bj_table(ctx, game)
         #game loop
         for player in game.players:
-            dc_user: User = await du.get_discord_user_from_id(bot, player.discord_id)
-            db_player:Player = Player(dc_user) # initialize the player to check their balance
+            db_player:Player = Player(player.name) # initialize the player to check their balance
             for hand in player.hands:
                 while hand.in_play:
                     table_message = await send_bj_table(ctx, game, table_message)
@@ -108,7 +107,7 @@ def setup(bot: Bot) -> None:
                         f"Your current balance is {balance}"
                         )
 
-                    user_pick: Optional[str] = await du.send_message_and_wait_for_user_choice(ctx, text, valid_reactions, dc_user)
+                    user_pick: Optional[str] = await du.send_message_and_wait_for_user_choice(ctx, text, valid_reactions, player.name)
 
                     if user_pick == None:
                         user_pick = stand_reaction
@@ -143,16 +142,16 @@ def setup(bot: Bot) -> None:
         table_message = await send_bj_table(ctx, game, table_message)
 
         #game has concluded, get win amounts!
-        win_amounts: Dict[User, int] = game.calculate_win_amounts()
+        win_amounts: Dict[str, int] = game.calculate_win_amounts()
         win_string: str = "----------------------------------\n"
         for player, amount in win_amounts.items():
-            db_player = Player(await du.get_discord_user_from_id(bot, player.discord_id))
+            db_player = Player(player)
             db_player.modify_balance(amount)
 
             if amount == 0:
-                win_string +=  f"{player.name} Lost to the dealer\n"
+                win_string +=  f"{player} Lost to the dealer\n"
             else:
-                win_string += f"{player.name} Won: {amount}\n"
+                win_string += f"{player} Won: {amount}\n"
 
         win_string += "----------------------------------"
         await du.send_persistant_message(ctx, win_string)

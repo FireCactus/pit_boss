@@ -5,7 +5,7 @@ from typing import *
 import asyncio
 import os
 
-from player.Player import Player
+from games.Player import Player
 from games.roulette.RouletteGame import RouletteGame, RouletteBet, RouletteOutcomes
 from bot_commands import discord_utilities as du 
 
@@ -38,15 +38,15 @@ def setup(bot: Bot) -> None:
 
         start_text: str = f"Spinning Roulette wheel in {start_game_countdown} seconds!\nPlace your bets!"
         bets: list[RouletteBet] = []
-        reaction_users: Dict[User, list[str]] = await du.send_standard_join_game_message(ctx, start_text, roulette_reactions, start_game_countdown)
-        for user, reactions in reaction_users.items():
-            player = Player(user)
+        reaction_users: Dict[str, list[str]] = await du.send_standard_join_game_message(ctx, start_text, roulette_reactions, start_game_countdown)
+        for username, reactions in reaction_users.items():
+            player = Player(username)
             bet: int = player.get_player_bet()
             for reaction in reactions:
                 balance: int = player.get_balance()          
 
                 if bet > balance:
-                    poor_text = f"Sorry {player.display_name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]"
+                    poor_text = f"Sorry {player.name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]"
                     await du.send_vanishing_message(ctx, poor_text)
                     continue
 
@@ -70,7 +70,7 @@ def setup(bot: Bot) -> None:
                 elif reaction == black_reaction:
                     pick = RouletteOutcomes.BLACK
                 
-                rt_bet: RouletteBet = RouletteBet(name=player.display_name, discord_id=player.discord_id, bet_amount=bet, pick=pick)
+                rt_bet: RouletteBet = RouletteBet(name=player.name, bet_amount=bet, pick=pick)
                 bets.append(rt_bet)
         
         if len(bets) == 0:
@@ -98,15 +98,15 @@ def setup(bot: Bot) -> None:
         string += f"The Roulette wheel has stopped!\n Result was: {game.rolled_number} {game.rolled_color.title()}\n"
         
         #pay the winners
-        win_dict: Dict[int,int] = game.calculate_win_amounts()
+        win_dict: Dict[str,int] = game.calculate_win_amounts()
         string += "---------- Roulette Results ----------"
-        for discord_id, amount in win_dict.items():
-            player = Player(await du.get_discord_user_from_id(bot, discord_id)) 
-            string += f"\n  {player.display_name} "
+        for player, amount in win_dict.items():
+            string += f"\n  {player} "
             if amount == 0:
                 string += f" Lost"
             else:
                 string += f" Won {amount}"
+                player = Player(player)
                 player.modify_balance(amount)
                 
         await du.send_persistant_message(ctx, string)

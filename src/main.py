@@ -10,9 +10,6 @@ import os
 from bot_commands import discord_utilities as du
 from bot_commands.games import blackjack, roulette
 from bot_commands import money
-from bot_commands import discord_utilities as du
-from bot_commands.games import blackjack, roulette
-from bot_commands import money
 #load .env file
 load_dotenv(dotenv_path="etc/.env")
 
@@ -28,20 +25,14 @@ blackjack.setup(bot) # import commands from other files
 roulette.setup(bot)
 money.setup(bot)
 
-blackjack.setup(bot) # import commands from other files
-roulette.setup(bot)
-money.setup(bot)
-
 info_delete_after_seconds: int = 30
 
 @bot.command("help")
 async def help(ctx: Context) -> None:
     user: str = str(ctx.message.author)
     await du.delete_message(ctx.message)
-    await du.delete_message(ctx.message)
     
     command_list: list[str] = [
-        f"!daily -> Gives you a daily reward of 100 (renewable at midnight)",
         f"!daily -> Gives you a daily reward of 100 (renewable at midnight)",
         f"!balance -> Returns your current balance",
         f"!balance all -> Returns the balances of all players",
@@ -56,7 +47,7 @@ async def help(ctx: Context) -> None:
     for command in command_list:
         string += command + "\n"
     string += "-----------------------------------------------------------"
-    await du.send_vanishing_message(ctx, string, info_delete_after_seconds)
+    await du.send_vanishing_message(string, info_delete_after_seconds)
 
 
 if __name__ == "__main__":
