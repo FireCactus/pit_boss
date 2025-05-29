@@ -65,7 +65,7 @@ class PlayersDatabase(Database):
         result: list[str] = self._cursor.fetchall()
         strings_list = [item[0] for item in result]
         
-        if player in strings_list:
+        if discord_id in strings_list:
             return True
        
         return False
