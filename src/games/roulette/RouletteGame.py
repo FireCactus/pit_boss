@@ -5,6 +5,7 @@ import os
 
 from enum import StrEnum, auto
 from typing import *
+from typing import *
 from discord.ext.commands import Context
 from discord import File
 
@@ -19,6 +20,7 @@ class RouletteOutcomes(StrEnum):
     ODD = "odd"
 
 
+color_table: dict[int,RouletteOutcomes] ={
 color_table: dict[int,RouletteOutcomes] ={
     0: RouletteOutcomes.GREEN,
     1: RouletteOutcomes.RED,
@@ -84,7 +86,20 @@ class RouletteGame:
         self.rolled_parity: Optional[RouletteOutcomes] = None
 
     def spin_the_wheel(self) -> None:
+
+    def __init__(self, bets: list[RouletteBet]) -> None:
+        self.bets: list[RouletteBet] = bets
+
+        self.rolled_number: Optional[int] = None
+        self.rolled_color: Optional[RouletteOutcomes] = None
+        self.rolled_parity: Optional[RouletteOutcomes] = None
+
+    def spin_the_wheel(self) -> None:
         roulette_pick: int = random.randint(0,36)
+
+        self.rolled_number = roulette_pick
+        self.rolled_color = color_table[roulette_pick]
+        self.rolled_parity =  RouletteOutcomes.EVEN if roulette_pick % 2 == 0 else RouletteOutcomes.ODD
 
         self.rolled_number = roulette_pick
         self.rolled_color = color_table[roulette_pick]
@@ -115,4 +130,5 @@ class RouletteGame:
         
         return win_dict
             
+
 

@@ -1,4 +1,4 @@
-from lootboxes import LootBox, LootBoxItem
+from games.lootboxes import LootBox, LootBoxItem
 from scratch_off.DiamondRush import DiamondRush
 from scratch_off.EmojiLines import EmojiLines
 from scratch_off.TransportSearch import TransportSearch

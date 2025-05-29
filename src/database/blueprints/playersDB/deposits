@@ -1,4 +1,4 @@
-#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON
 id                      INTEGER         "PRIMARY KEY"             
 player_discord_id       INTEGER         ""                      players(discord_id)
 amount                  INTEGER

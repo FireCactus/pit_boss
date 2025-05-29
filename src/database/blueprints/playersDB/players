@@ -1,4 +1,4 @@
-#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON DELETE/UPDATE
 discord_id              INTEGER         "PRIMARY KEY"
 display_name            TEXT
 balance                 INTEGER

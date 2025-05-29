@@ -2,8 +2,11 @@ from games.cardgames.card_deck import Deck
 from games.cardgames.card import Card
 from typing import *
 import copy
+from typing import *
+import copy
 
 
+def calculate_blackjack_hand_value(cards: list[Card]) -> int:
 def calculate_blackjack_hand_value(cards: list[Card]) -> int:
 
     total_value: int = 0
@@ -29,12 +32,16 @@ def calculate_blackjack_hand_value(cards: list[Card]) -> int:
     return total_value
 
 
+
 class BlackJackHand():
 
+    def __init__(self, bet:int, cards: list[Card]) -> None:
     def __init__(self, bet:int, cards: list[Card]) -> None:
         self.bet: int = bet
         self.in_play: bool = True
         
+        self.cards: list[Card] = cards
+        self.value: int = calculate_blackjack_hand_value(self.cards)
         self.cards: list[Card] = cards
         self.value: int = calculate_blackjack_hand_value(self.cards)
 
@@ -55,9 +62,20 @@ class BlackJackHand():
         
         return card_strings
     
+    def get_card_strings(self) -> list[str]:
+        '''
+        Returns the hand cards in a string format ['A','8','?']
+        '''
+        card_strings: list[str] = []
+        for card in self.cards:
+            card_strings.append(card.get_value())
+        
+        return card_strings
+    
     def is_splittable(self) -> bool:
         if len(self.cards) != 2:
             return False
+        if calculate_blackjack_hand_value([self.cards[0]]) != calculate_blackjack_hand_value([self.cards[1]]):
         if calculate_blackjack_hand_value([self.cards[0]]) != calculate_blackjack_hand_value([self.cards[1]]):
             return False
         return True
@@ -75,11 +93,14 @@ class BlackjackPlayer():
         self.discord_id: int = discord_id
         self.initial_bet: int = bet
         self.hands: list[BlackJackHand] = [BlackJackHand(bet,[])]
+        self.hands: list[BlackJackHand] = [BlackJackHand(bet,[])]
     
     def split_hand(self, hand_pos: int) -> None:
         original_hand: BlackJackHand = self.hands[hand_pos]
         
+        
         new_hand: BlackJackHand = BlackJackHand(original_hand.bet, [original_hand.cards.pop(-1)])
+        original_hand.value = calculate_blackjack_hand_value(original_hand.cards)
         original_hand.value = calculate_blackjack_hand_value(original_hand.cards)
 
         self.hands.append(new_hand)
@@ -87,15 +108,22 @@ class BlackjackPlayer():
 class BlackjackGame:
     _dealer_draws_to: int = 17
     _shoe_size: int = 6
+    _dealer_draws_to: int = 17
+    _shoe_size: int = 6
 
+    _payout_table: Dict[str, float] = {
     _payout_table: Dict[str, float] = {
         "normal_win": 2,
         "blackjack": 2.5
         }
+        "blackjack": 2.5
+        }
 
+    def __init__(self, player_list: list[BlackjackPlayer]):
     def __init__(self, player_list: list[BlackjackPlayer]):
 
         self.players: list[BlackjackPlayer] = player_list
+        self.shoe: Deck = self.__construct_deck()
         self.shoe: Deck = self.__construct_deck()
 
         self.dealer_cards: list[Card] = []
@@ -103,12 +131,20 @@ class BlackjackGame:
         self.dealer_hand_value = calculate_blackjack_hand_value(self.dealer_cards)
 
     def __construct_deck(self) -> Deck:
+        self.__deal_initial_cards()
+        self.dealer_hand_value = calculate_blackjack_hand_value(self.dealer_cards)
 
+    def __construct_deck(self) -> Deck:
+
+        assert self._shoe_size >= 1
         assert self._shoe_size >= 1
 
         shoe: Deck = Deck(type="normal")
         if self._shoe_size >= 2:
+        if self._shoe_size >= 2:
 
+            for i in range(self._shoe_size - 1):
+                shoe.insert(Deck(type="normal").cards)
             for i in range(self._shoe_size - 1):
                 shoe.insert(Deck(type="normal").cards)
 
@@ -116,16 +152,21 @@ class BlackjackGame:
         return shoe
     
     def __deal_initial_cards(self) -> None:
+    
+    def __deal_initial_cards(self) -> None:
 
         # give each player a card
         for player in self.players:
             self.hit_player(player)
+            self.hit_player(player)
 
         # give the dealer a card
+        self.draw_dealer_card()
         self.draw_dealer_card()
 
         # give the players their second card
         for player in self.players:
+            self.hit_player(player)
             self.hit_player(player)
 
         # give the dealer the second card face down
@@ -138,10 +179,65 @@ class BlackjackGame:
         #dealer hands
         for card in self.dealer_cards:
             hand_dict['Dealer'][0].append(card.get_value())
+    
+    def get_current_hands_in_string_form(self) -> Dict[str,list[list[str]]]:
+        hand_dict: Dict[str,list[list[str]]] = {'Dealer': [[]]}
+        
+        #dealer hands
+        for card in self.dealer_cards:
+            hand_dict['Dealer'][0].append(card.get_value())
 
+        #player hands
         #player hands
         for player in self.players:
             for hand in player.hands:
+                if player not in hand_dict:
+                    hand_dict[player.name] = []
+                
+                hand_dict[player.name].append(hand.get_card_strings())
+            
+        return hand_dict
+
+    def stand_player(self, player: BlackjackPlayer) -> None:
+        for hand in player.hands:
+            if hand.in_play:
+                hand.stand()
+                return None
+    
+    def hit_player(self, player: BlackjackPlayer) -> None:
+        for hand in player.hands:
+            if hand.in_play == False:
+                continue
+            hand.cards.append(self.shoe.draw_card(face_down=False))
+            hand.value = calculate_blackjack_hand_value(hand.cards)
+            
+            if hand.value >= 21:
+                hand.stand()
+            return None
+                
+    def double_player(self, player: BlackjackPlayer) -> None:
+        for hand in player.hands:
+            if hand.in_play == False:
+                continue
+            hand.cards.append(self.shoe.draw_card(face_down=True))
+            hand.value = calculate_blackjack_hand_value(hand.cards)
+            hand.double_down()
+            return None
+    
+    def split_player(self, player: BlackjackPlayer) -> None:
+        for i, hand in enumerate(player.hands):
+            if hand.in_play == False:
+                continue
+            player.split_hand(i)
+            return None
+    
+    def reveal_player_cards(self, player: BlackjackPlayer) -> None:
+        for hand in player.hands:
+            for card in hand.cards:
+                if card.face_down:
+                    card.turn_over()
+            hand.value = calculate_blackjack_hand_value(hand.cards)
+            
                 if player not in hand_dict:
                     hand_dict[player.name] = []
                 
