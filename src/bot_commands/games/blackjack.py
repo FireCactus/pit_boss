@@ -72,7 +72,7 @@ def setup(bot: Bot) -> None:
             bet: int = player.get_player_bet()
 
             if bet > balance:
-                poor_text = f"Sorry {player.name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]"
+                poor_text = f"Sorry {player.display_name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]"
                 await du.send_vanishing_message(ctx, poor_text)
             else:
                 player.modify_balance(-bet)
@@ -87,7 +87,7 @@ def setup(bot: Bot) -> None:
         table_message: Message = await send_bj_table(ctx, game)
         #game loop
         for player in game.players:
-            dc_user: User = await du.get_discord_user_from_id(player.discord_id)
+            dc_user: User = await du.get_discord_user_from_id(bot, player.discord_id)
             db_player:Player = Player(dc_user) # initialize the player to check their balance
             for hand in player.hands:
                 while hand.in_play:
@@ -146,7 +146,7 @@ def setup(bot: Bot) -> None:
         win_amounts: Dict[User, int] = game.calculate_win_amounts()
         win_string: str = "----------------------------------\n"
         for player, amount in win_amounts.items():
-            db_player = Player(await du.get_discord_user_from_id(player.discord_id))
+            db_player = Player(await du.get_discord_user_from_id(bot, player.discord_id))
             db_player.modify_balance(amount)
 
             if amount == 0:
