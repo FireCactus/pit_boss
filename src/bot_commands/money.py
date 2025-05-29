@@ -1,11 +1,13 @@
+from discord import User
 from discord.ext import commands
 from discord.ext.commands import Context, Bot
 from typing import Optional
 
 from player.Player import Player
 from database.PlayersDatabase import PlayersDatabase
-db = PlayersDatabase()
+from bot_commands import discord_utilities as du
 
+db = PlayersDatabase()
 info_delete_after_seconds: int = 15
 
 def setup(bot: Bot) -> None:
@@ -55,7 +57,6 @@ def setup(bot: Bot) -> None:
         from_player: Player = Player(ctx.message.author)
         await ctx.message.delete()
 
-
         to_user: User = ctx.message.mentions[0]
         amount: int = int(arg_2)
 
@@ -84,7 +85,7 @@ def setup(bot: Bot) -> None:
 
             string = "---- All players money ----\n"
             for discord_id in db.get_all_players():
-                listed_player: Player = Player(get_discord_user_from_id(bot, discord_id))
+                listed_player: Player = Player(du.get_discord_user_from_id(bot, discord_id))
                 string += f"{listed_player.name}   {listed_player.get_balance()}\n---------------------------n"
             await ctx.send(string)
         else:

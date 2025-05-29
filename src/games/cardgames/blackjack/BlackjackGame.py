@@ -203,7 +203,7 @@ class BlackjackGame:
 
         win_dict: Dict[BlackjackPlayer,int] = {}
         for player in self.players:
-            win_dict[BlackjackPlayer] = 0
+            win_dict[player] = 0
             for hand in player.hands:
                 if hand.value > 21:
                     continue
@@ -211,17 +211,17 @@ class BlackjackGame:
                 # natural blackjack 
                 if hand.value == 21 and len(hand.cards) == 2 and len(player.hands) == 1:
                     if self.dealer_hand_value == 21: #Push
-                        win_dict[player.name] += hand.bet
+                        win_dict[player] += hand.bet
                     else: # nat bj payout
-                        win_dict[player.name] += int(hand.bet*self._payout_table['blackjack'])
+                        win_dict[player] += int(hand.bet*self._payout_table['blackjack'])
                 
                 # if dealer busted or has less than the hand
                 elif self.dealer_hand_value > 21 or hand.value > self.dealer_hand_value:
-                    win_dict[player.name] += int(hand.bet*self._payout_table['normal_win'])
+                    win_dict[player] += int(hand.bet*self._payout_table['normal_win'])
                 
                 # if the hand matches the dealer
                 elif self.dealer_hand_value == hand.value:
-                    win_dict[player.name] += hand.bet
+                    win_dict[player] += hand.bet
                     #normally we would check if the dealer has a 21 to "push"
         
         return win_dict

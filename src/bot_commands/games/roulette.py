@@ -101,7 +101,7 @@ def setup(bot: Bot) -> None:
         win_dict: Dict[int,int] = game.calculate_win_amounts()
         string += "---------- Roulette Results ----------"
         for discord_id, amount in win_dict.items():
-            player: Player = Player(await du.get_discord_user_from_id(discord_id))
+            player = Player(await du.get_discord_user_from_id(discord_id))
             string += f"\n  {player.display_name} "
             if amount == 0:
                 string += f" Lost"
