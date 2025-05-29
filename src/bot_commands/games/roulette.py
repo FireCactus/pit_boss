@@ -38,7 +38,7 @@ def setup(bot: Bot) -> None:
 
         start_text: str = f"Spinning Roulette wheel in {start_game_countdown} seconds!\nPlace your bets!"
         bets: list[RouletteBet] = []
-        reaction_users: Dict[str, list[str]] = await du.send_standard_join_game_message(ctx, start_text, roulette_reactions, start_game_countdown)
+        reaction_users: Dict[User, list[str]] = await du.send_standard_join_game_message(ctx, start_text, roulette_reactions, start_game_countdown)
         for user, reactions in reaction_users.items():
             player = Player(user)
             bet: int = player.get_player_bet()
@@ -46,7 +46,7 @@ def setup(bot: Bot) -> None:
                 balance: int = player.get_balance()          
 
                 if bet > balance:
-                    poor_text = f"Sorry {player.name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]"
+                    poor_text = f"Sorry {player.display_name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]"
                     await du.send_vanishing_message(ctx, poor_text)
                     continue
 
@@ -70,7 +70,7 @@ def setup(bot: Bot) -> None:
                 elif reaction == black_reaction:
                     pick = RouletteOutcomes.BLACK
                 
-                rt_bet: RouletteBet = RouletteBet(name=player.name, discord_id=player.discord_id, bet_amount=bet, pick=pick)
+                rt_bet: RouletteBet = RouletteBet(name=player.display_name, discord_id=player.discord_id, bet_amount=bet, pick=pick)
                 bets.append(rt_bet)
         
         if len(bets) == 0:
@@ -101,7 +101,7 @@ def setup(bot: Bot) -> None:
         win_dict: Dict[int,int] = game.calculate_win_amounts()
         string += "---------- Roulette Results ----------"
         for discord_id, amount in win_dict.items():
-            player = Player(await du.get_discord_user_from_id(discord_id))
+            player = Player(await du.get_discord_user_from_id(bot, discord_id)) 
             string += f"\n  {player.display_name} "
             if amount == 0:
                 string += f" Lost"

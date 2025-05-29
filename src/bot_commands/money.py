@@ -12,7 +12,7 @@ info_delete_after_seconds: int = 15
 
 def setup(bot: Bot) -> None:
     
-    @bot.command("bet")
+    @bot.command("bet") 
     async def change_player_bet(ctx: Context, arg_1: str, arg_2: str) -> None:
         if arg_1 == "size":
             player: Player = Player(ctx.message.author)
@@ -21,9 +21,9 @@ def setup(bot: Bot) -> None:
             amount = int(arg_2)
             try:
                 player.change_bet(amount)
-                await ctx.send(f"Bet size for {player.name} changed to {amount}", delete_after=info_delete_after_seconds)
+                await ctx.send(f"Bet size for {player.display_name} changed to {amount}", delete_after=info_delete_after_seconds)
             except ValueError as e:
-                await ctx.send(f"Bet size for {player.name} Unchanged!\nReason: {e}", delete_after=info_delete_after_seconds)
+                await ctx.send(f"Bet size for {player.display_name} Unchanged!\nReason: {e}", delete_after=info_delete_after_seconds)
 
 
     @bot.command("all")
@@ -35,9 +35,9 @@ def setup(bot: Bot) -> None:
             current_balance = player.get_balance()
             try:
                 player.change_bet(current_balance)
-                await ctx.send(f"Bet size for {player.name} changed to {current_balance}", delete_after=info_delete_after_seconds)
+                await ctx.send(f"Bet size for {player.display_name} changed to {current_balance}", delete_after=info_delete_after_seconds)
             except ValueError as e:
-                await ctx.send(f"Bet size for {player.name} Unchanged!\nReason: {e}", delete_after=info_delete_after_seconds)
+                await ctx.send(f"Bet size for {player.display_name} Unchanged!\nReason: {e}", delete_after=info_delete_after_seconds)
 
 
     @bot.command("daily")
@@ -47,9 +47,9 @@ def setup(bot: Bot) -> None:
         
         try:
             player.receive_daily()
-            await ctx.send(f" {player.name} received their daily reward! {player._daily_amount} added to balance ")
+            await ctx.send(f" {player.display_name} received their daily reward! {player._daily_amount} added to balance ")
         except ValueError as e:
-            await ctx.send(f"Unable to give daily to {player.name}\nReason: {e}", delete_after=info_delete_after_seconds)
+            await ctx.send(f"Unable to give daily to {player.display_name}\nReason: {e}", delete_after=info_delete_after_seconds)
 
 
     @bot.command("give")
@@ -75,7 +75,7 @@ def setup(bot: Bot) -> None:
 
         from_player.modify_balance(-amount)
         to_player.modify_balance(amount)
-        await ctx.send(f"Transferred {amount} from {from_player.name} to {to_player.name}",delete_after=info_delete_after_seconds)
+        await ctx.send(f"Transferred {amount} from {from_player.display_name} to {to_player.display_name}",delete_after=info_delete_after_seconds)
         
         
     @bot.command("balance")
@@ -85,9 +85,9 @@ def setup(bot: Bot) -> None:
 
             string = "---- All players money ----\n"
             for discord_id in db.get_all_players():
-                listed_player: Player = Player(du.get_discord_user_from_id(bot, discord_id))
-                string += f"{listed_player.name}   {listed_player.get_balance()}\n---------------------------n"
+                listed_player: Player = Player(await du.get_discord_user_from_id(bot, discord_id))
+                string += f"{listed_player.display_name}   {listed_player.get_balance()}\n---------------------------\n"
             await ctx.send(string)
         else:
             player: Player = Player(ctx.message.author)
-            await ctx.send(f"{player.name} balance: {player.get_balance()}",delete_after=info_delete_after_seconds)
+            await ctx.send(f"{player.display_name} balance: {player.get_balance()}",delete_after=info_delete_after_seconds)
