@@ -1,5 +1,5 @@
 #COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON
-id                      INTEGER         "PRIMARY KEY"           players(id)
+id                      INTEGER         "PRIMARY KEY"           players(discord_id)
 current_streak          INTEGER
 highest_lose_streak     INTEGER
 highest_win_streak      INTEGER

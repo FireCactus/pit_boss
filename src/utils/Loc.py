@@ -7,6 +7,10 @@ class Loc:
     @staticmethod
     def datahub(*args: str) -> str:
         return os.path.join(project_root, "datahub", *args)
+
+    @staticmethod
+    def jar(*args: str) -> str:
+        return os.path.join(project_root, "datahub", "jar", *args)
     
     @staticmethod
     def media(*args: str) -> str:
