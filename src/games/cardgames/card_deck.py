@@ -26,7 +26,7 @@ class Deck:
             self.cards = []
 
             for i in range(52):
-                card: Card = Card("A", "Hearts")
+                card = Card("A", "Hearts")
                 self.cards.append(card)
 
         else:

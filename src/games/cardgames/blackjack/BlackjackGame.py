@@ -105,11 +105,11 @@ class BlackjackGame:
 
         assert self._shoe_size >= 1
 
-        shoe: Deck = Deck(type="aces_only")
+        shoe: Deck = Deck(type="normal")
         if self._shoe_size >= 2:
 
             for i in range(self._shoe_size - 1):
-                shoe.insert(Deck(type="aces_only").cards)
+                shoe.insert(Deck(type="normal").cards)
 
         shoe.shuffle()
         return shoe

@@ -9,6 +9,36 @@ db = PlayersDatabase()
 info_delete_after_seconds: int = 15
 
 def setup(bot: Bot) -> None:
+    
+    @bot.command("bet")
+    async def change_player_bet(ctx: Context, arg_1: str, arg_2: str) -> None:
+        if arg_1 == "size":
+            user: str = str(ctx.message.author)
+            player: Player = Player(user)
+            await ctx.message.delete()
+           
+            amount = int(arg_2)
+            try:
+                player.change_bet(amount)
+                await ctx.send(f"Bet size for {player.name} changed to {amount}", delete_after=info_delete_after_seconds)
+            except ValueError as e:
+                await ctx.send(f"Bet size for {player.name} Unchanged!\nReason: {e}", delete_after=info_delete_after_seconds)
+
+
+    @bot.command("all")
+    async def change_bet_to_max(ctx: Context, arg_1: str) -> None:
+        if arg_1 == "in":
+            user: str = str(ctx.message.author)
+            player: Player = Player(user)
+            await ctx.message.delete()
+
+            current_balance = player.get_balance()
+            try:
+                player.change_bet(current_balance)
+                await ctx.send(f"Bet size for {player.name} changed to {current_balance}", delete_after=info_delete_after_seconds)
+            except ValueError as e:
+                await ctx.send(f"Bet size for {player.name} Unchanged!\nReason: {e}", delete_after=info_delete_after_seconds)
+
 
     @bot.command("daily")
     async def receive_dailty(ctx: Context) -> None:
