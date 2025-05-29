@@ -62,6 +62,7 @@ color_table: dict[int,RouletteOutcomes] ={
 
 class RouletteBet(NamedTuple):
     name: str
+    discord_id:int
     bet_amount: int
     pick: RouletteOutcomes 
 
@@ -90,27 +91,27 @@ class RouletteGame:
         self.rolled_parity =  RouletteOutcomes.EVEN if roulette_pick % 2 == 0 else RouletteOutcomes.ODD
 
     
-    def calculate_win_amounts(self) -> Dict[str,int]:
-        win_dict: Dict[str,int] = {}
+    def calculate_win_amounts(self) -> Dict[int,int]:
+        win_dict: Dict[int,int] = {}
         for bet in self.bets:
-            if bet.name not in win_dict.keys():
-                win_dict[bet.name] = 0
+            if bet.discord_id not in win_dict.keys():
+                win_dict[bet.discord_id] = 0
 
             # if bet on even/odd and was correct
             if bet.pick in [RouletteOutcomes.EVEN, RouletteOutcomes.ODD] and self.rolled_parity == bet.pick:
-                win_dict[bet.name] += int(bet.bet_amount * self._payout_table['even_odd_payout'])
+                win_dict[bet.discord_id] += int(bet.bet_amount * self._payout_table['even_odd_payout'])
             
             # if bet on red/black and was correct
             elif bet.pick in [RouletteOutcomes.RED, RouletteOutcomes.BLACK] and self.rolled_color == bet.pick:
-                win_dict[bet.name] += int(bet.bet_amount * self._payout_table['red_black_payout'])
+                win_dict[bet.discord_id] += int(bet.bet_amount * self._payout_table['red_black_payout'])
 
             # if bet on green and was correct
             elif bet.pick == RouletteOutcomes.GREEN and self.rolled_color == bet.pick:
-                win_dict[bet.name] += int(bet.bet_amount * self._payout_table['correct_green_guess'])
+                win_dict[bet.discord_id] += int(bet.bet_amount * self._payout_table['correct_green_guess'])
 
             # if bet on anything other than green and green was the result
             elif bet.pick != RouletteOutcomes.GREEN and self.rolled_color == RouletteOutcomes.GREEN:
-                win_dict[bet.name] += int(bet.bet_amount * self._payout_table['green_when_not_chosen'])
+                win_dict[bet.discord_id] += int(bet.bet_amount * self._payout_table['green_when_not_chosen'])
         
         return win_dict
             

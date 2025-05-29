@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord.ext.commands import Context, Bot
 from typing import Optional
 
-from games.Player import Player
+from player.Player import Player
 from database.PlayersDatabase import PlayersDatabase
 db = PlayersDatabase()
 
@@ -13,8 +13,7 @@ def setup(bot: Bot) -> None:
     @bot.command("bet")
     async def change_player_bet(ctx: Context, arg_1: str, arg_2: str) -> None:
         if arg_1 == "size":
-            user: str = str(ctx.message.author)
-            player: Player = Player(user)
+            player: Player = Player(ctx.message.author)
             await ctx.message.delete()
            
             amount = int(arg_2)
@@ -28,8 +27,7 @@ def setup(bot: Bot) -> None:
     @bot.command("all")
     async def change_bet_to_max(ctx: Context, arg_1: str) -> None:
         if arg_1 == "in":
-            user: str = str(ctx.message.author)
-            player: Player = Player(user)
+            player: Player = Player(ctx.message.author)
             await ctx.message.delete()
 
             current_balance = player.get_balance()
@@ -42,8 +40,7 @@ def setup(bot: Bot) -> None:
 
     @bot.command("daily")
     async def receive_dailty(ctx: Context) -> None:
-        user: str = str(ctx.message.author)
-        player: Player = Player(user)
+        player: Player = Player(ctx.message.author)
         await ctx.message.delete()
         
         try:
@@ -55,12 +52,11 @@ def setup(bot: Bot) -> None:
 
     @bot.command("give")
     async def transfer_money(ctx: Context, arg_1: str, arg_2: str) -> None:
-        user: str = str(ctx.message.author)
-        from_player: Player = Player(user)
+        from_player: Player = Player(ctx.message.author)
         await ctx.message.delete()
 
 
-        to_user: str = arg_1
+        to_user: User = ctx.message.mentions[0]
         amount: int = int(arg_2)
 
         #check if to player exists
@@ -83,16 +79,14 @@ def setup(bot: Bot) -> None:
         
     @bot.command("balance")
     async def get_user_balance(ctx: Context, arg_1: Optional[str]) -> None:
-        user: str = str(ctx.message.author)
         await ctx.message.delete()
-        
         if arg_1 == "all":
 
             string = "---- All players money ----\n"
-            for username in db.get_all_players():
-                listed_player: Player = Player(username)
+            for discord_id in db.get_all_players():
+                listed_player: Player = Player(get_discord_user_from_id(bot, discord_id))
                 string += f"{listed_player.name}   {listed_player.get_balance()}\n---------------------------n"
             await ctx.send(string)
         else:
-            player: Player = Player(user)
+            player: Player = Player(ctx.message.author)
             await ctx.send(f"{player.name} balance: {player.get_balance()}",delete_after=info_delete_after_seconds)

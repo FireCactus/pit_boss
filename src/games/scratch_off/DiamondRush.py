@@ -44,3 +44,13 @@ class DiamondRush(EmojiLines):
     def __init__(self) -> None:
         super().__init__()
         self._fields = self._generate_fields()
+
+
+
+import pickle
+
+ticket = DiamondRush()
+with open("diamond_rush.pkl",'rb') as f:
+    ticket = pickle.load(f)
+
+print(ticket)
