@@ -1,6 +1,9 @@
 from games.scratch_off.ScratchOffTicket import ScratchOffTicket, TicketPayoutRank, ScratchOffField
 from typing import Optional
 import random
+
+from player.Item import ItemRepresentation
+
 '''
 Basic scratch off ticket with the structure:
 -------------------------------------
@@ -17,8 +20,9 @@ if all 3 characters match - you win
 
 class EmojiLines(ScratchOffTicket):
     _price = 25
-    _name = "Emoji lines"
+    _name = "Emoji lines scratch off ticket"
     _description = "if all 3 emojis are the same in a line you win!"
+    _representation = ItemRepresentation(emoji="🎟️", picture=None)
     _ranks = (
         TicketPayoutRank(rank=7, win_amount=0, probability=0.3),
         TicketPayoutRank(rank=6, win_amount=15, probability=0.4),
@@ -42,7 +46,7 @@ class EmojiLines(ScratchOffTicket):
 
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(self._name, self._description, self._representation)
         self._fields = self._generate_fields()
 
 

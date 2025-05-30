@@ -150,17 +150,13 @@ class PlayersDatabase(Database):
         self._cursor.connection.commit()
 
     def save_item_to_player_inventory(self, discord_id: int, pickle_path: str) -> None:
-        query: str= """
-        INSERT INTO items
-        (object)
-        VALUES (?);
 
-        INSERT INTO eq
-        (player_discord_id, item_id)
-        VALUES (?,last_insert_rowid());
-        """
+        item_query:str = "INSERT INTO items (object) VALUES (?);"
+        self._cursor.execute(item_query, (pickle_path,))
 
-        self._cursor.execute(query, (pickle_path, discord_id))
+        eq_query = "INSERT INTO eq (player_discord_id, item_id) VALUES (?, ?);"
+        self._cursor.execute(eq_query, (discord_id, self._cursor.lastrowid))
+
         self._cursor.connection.commit()
 
     def delete_item_from_player_inventory(self, pickle_path: str) -> None:
@@ -170,5 +166,19 @@ class PlayersDatabase(Database):
         WHERE object=?;
         """
 
-        self._cursor.execute(query, (pickle_path))
+        self._cursor.execute(query, (pickle_path,))
         self._cursor.connection.commit()
+    
+    def get_player_items(self, discord_id: int) -> list[str]:
+        query: str= """
+        SELECT items.object
+        FROM eq
+        JOIN items ON eq.item_id = items.id
+        WHERE eq.player_discord_id = ?;
+        """
+
+        self._cursor.execute(query, (discord_id,))
+        result: list[str] = self._cursor.fetchall()
+    
+        print([item[0] for item in result])
+        return [item[0] for item in result]

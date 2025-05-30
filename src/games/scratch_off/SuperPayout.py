@@ -1,9 +1,12 @@
+import random
+
 from games.scratch_off.ScratchOffTicket import (
     ScratchOffTicket,
     TicketPayoutRank,
     ScratchOffField,
 )
-import random
+from player.Item import ItemRepresentation
+
 
 """
 Basic scratch off ticket with the structure:
@@ -17,8 +20,9 @@ Basic scratch off ticket with the structure:
 
 class SuperPayout(ScratchOffTicket):
     _price = 10
-    _name = "Super Payout"
+    _name = "Super Payout scratch off ticket"
     _description = "if a scratched number is same as winning number you win!"
+    _representation = ItemRepresentation(emoji="🎟️", picture=None)
     _ranks = (
         TicketPayoutRank(rank=5, win_amount=0, probability=0.4),
         TicketPayoutRank(rank=4, win_amount=5, probability=0.4),
@@ -31,7 +35,7 @@ class SuperPayout(ScratchOffTicket):
     _row_amount = 2
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(self._name, self._description, self._representation)
         self._fields = self._generate_fields()
 
     def _generate_fields(self) -> list[ScratchOffField]:

@@ -1,7 +1,9 @@
-from database.PlayersDatabase import PlayersDatabase
-from player import Item
 import asyncio
 from discord import User
+import pickle
+
+from player import Item
+from database.PlayersDatabase import PlayersDatabase
 
 db = PlayersDatabase()
 
@@ -56,12 +58,28 @@ class Player:
             db.change_player_received_daily(self.discord_id, True)
             self.modify_balance(self._daily_amount)
 
-    async def save_item_to_inventory(self, item: Item) -> None:
-        await item.save_to_disk()
+    def save_item_to_inventory(self, item: Item) -> None:
+        item.save_to_disk()
         db.save_item_to_player_inventory(self.discord_id, item.get_filepath())
 
-    async def delete_item_from_inventory(self, item: Item) -> None:
+    def delete_item_from_inventory(self, item: Item) -> None:
         db.delete_item_from_player_inventory(item.get_filepath())
-        await item.delete_from_disk()
+        item.delete_from_disk()
+    
+    def get_all_items(self) -> list[Item]:
+        object_pickles: list[str] = db.get_player_items(self.discord_id)
+        items: list[Item] = []
+
+        for pickle_path in object_pickles:
+            try:
+                with open(pickle_path, "rb") as f:
+                    print(f"loading {pickle_path}")
+                    item = pickle.load(f)
+                    items.append(item)
+            except (FileNotFoundError, pickle.UnpicklingError) as e:
+                print(f"Error while unpickling object: {pickle_path}:\n{e}")
+
+        return items
+
         
         
