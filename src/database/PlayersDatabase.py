@@ -4,6 +4,7 @@ import datetime
 
 from database.Database import Database
 from utils.Loc import Loc
+from utils.Files import Files 
 
 
 class PlayerStatistics(NamedTuple):
@@ -22,7 +23,6 @@ class Item(NamedTuple):
 
 
 class PlayersDatabase(Database):
-    _cursor: sqlite3.Cursor
     _shop_discord_id: int = 1
     
     _welcome_money: int = 500
@@ -30,14 +30,12 @@ class PlayersDatabase(Database):
     
     def __init__(self) -> None:
         super().__init__(name="playersDB")
-        self._cursor = sqlite3.connect(f"{Loc.datahub(self._name)}.db").cursor()
-        self._cursor.connection.execute("PRAGMA foreign_keys = ON;")
 
-        # Check if the shop user exists and create it if missing  ( SHOP HACK )
+        # Check if the shop user exists and create it if missing (HACK)
         if self.check_if_player_exists(self._shop_discord_id) == False:
             self.add_new_player(self._shop_discord_id, "Shop")
 
-        
+        Files.create_dir_if_not_exist(Loc.datahub("jar"))
     
     def get_player_balance(self, discord_id: int) -> int:
         query: str= """
@@ -80,8 +78,6 @@ class PlayersDatabase(Database):
 
     def add_new_player(self, discord_id: int, display_name:str) -> None:
 
-
-
         query: str= """
             INSERT INTO PLAYERS (discord_id, display_name, balance, received_daily, exp, title, last_interaction_time, bet)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?);
@@ -96,7 +92,7 @@ class PlayersDatabase(Database):
             datetime.datetime.now().isoformat(),
             25
         ))
-        self._cursor.connection.commit()
+        self._connection.commit()
     
     def get_player_bet(self, discord_id: int) -> int:
         query: str = """
@@ -118,7 +114,7 @@ class PlayersDatabase(Database):
             WHERE discord_id = ?;
         """
         self._cursor.execute(query, (amount, discord_id))
-        self._cursor.connection.commit()
+        self._connection.commit()
     
     def get_all_players(self) -> list[str]:
         query: str= """
@@ -154,7 +150,7 @@ class PlayersDatabase(Database):
         """
 
         self._cursor.execute(query, (value, discord_id))
-        self._cursor.connection.commit()
+        self._connection.commit()
 
     def save_item_to_player_inventory(self, discord_id: int, pickle_path: str) -> None:
 
@@ -164,14 +160,14 @@ class PlayersDatabase(Database):
         eq_query = "INSERT INTO eq (player_discord_id, item_id) VALUES (?, ?);"
         self._cursor.execute(eq_query, (discord_id, self._cursor.lastrowid))
 
-        self._cursor.connection.commit()
+        self._connection.commit()
 
     def delete_item_from_player_inventory(self, pickle_path: str) -> None:
         
         query: str= """DELETE FROM items WHERE object=?;"""
 
         self._cursor.execute(query, (pickle_path,))
-        self._cursor.connection.commit()
+        self._connection.commit()
     
     def get_player_items(self, discord_id: int) -> list[str]:
         query: str= """
@@ -184,3 +180,5 @@ class PlayersDatabase(Database):
         self._cursor.execute(query, (discord_id,))
         result: list[str] = self._cursor.fetchall()
         return [item[0] for item in result]
+    
+db = PlayersDatabase()

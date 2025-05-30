@@ -13,18 +13,25 @@ class Database(metaclass=Singleton):
 
     _name: str
     _cursor: sqlite3.Cursor
+    _connection: sqlite3.Connection
 
     def __init__(self, name: str) -> None:
         self._name = name
-        Files.create_dir_if_not_exist(Loc.datahub())
-        self._cursor = sqlite3.connect(f"{Loc.datahub(self._name)}.db").cursor()
-        self._cursor.connection.execute("PRAGMA foreign_keys = ON;")
-        self.sanity_check()
-        
 
+        Files.create_dir_if_not_exist(Loc.datahub())
+
+        self._connection = sqlite3.connect(f"{Loc.datahub(self._name)}.db")
+        self._cursor = self._connection.cursor()
+        
+        self.sanity_check()
+
+    def __del__(self):
+        self._connection.close()
+        
     def sanity_check(self) -> None:
         db_scheme: DatabaseScheme = BlueprintCompiler().database_scheme_from_blueprints(self._name)
         self.__synchronize(db_scheme)
+        self.__pragma_on()
 
     def __synchronize(self, loaded_scheme: DatabaseScheme) -> None:
         existing_tables: Dict[str, TableScheme] = self.__load_current_schema()
@@ -36,8 +43,8 @@ class Database(metaclass=Singleton):
             elif not self.__compare_tables(current, table):
                 self.__rebuild_table(current, table)
 
-        self._cursor.connection.commit()
-        self._cursor.connection.close()
+    def __pragma_on(self):
+        self._connection.execute("PRAGMA foreign_keys = ON;")
 
     def __load_current_schema(self) -> Dict[str, TableScheme]:
         self._cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
@@ -151,3 +158,4 @@ class Database(metaclass=Singleton):
             """)
 
         self._cursor.execute(f"DROP TABLE {old_table};")
+        self._connection.commit()
