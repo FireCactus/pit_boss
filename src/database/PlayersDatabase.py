@@ -23,14 +23,21 @@ class Item(NamedTuple):
 
 class PlayersDatabase(Database):
     _cursor: sqlite3.Cursor
-
+    _shop_discord_id: int = 1
+    
     _welcome_money: int = 500
     _starting_gambler_title = "Novice gambler"
     
     def __init__(self) -> None:
         super().__init__(name="playersDB")
         self._cursor = sqlite3.connect(f"{Loc.datahub(self._name)}.db").cursor()
+        self._cursor.connection.execute("PRAGMA foreign_keys = ON;")
 
+        # Check if the shop user exists and create it if missing  ( SHOP HACK )
+        if self.check_if_player_exists(self._shop_discord_id) == False:
+            self.add_new_player(self._shop_discord_id, "Shop")
+
+        
     
     def get_player_balance(self, discord_id: int) -> int:
         query: str= """
@@ -161,10 +168,7 @@ class PlayersDatabase(Database):
 
     def delete_item_from_player_inventory(self, pickle_path: str) -> None:
         
-        query: str= """
-        DELETE FROM items
-        WHERE object=?;
-        """
+        query: str= """DELETE FROM items WHERE object=?;"""
 
         self._cursor.execute(query, (pickle_path,))
         self._cursor.connection.commit()
@@ -179,6 +183,4 @@ class PlayersDatabase(Database):
 
         self._cursor.execute(query, (discord_id,))
         result: list[str] = self._cursor.fetchall()
-    
-        print([item[0] for item in result])
         return [item[0] for item in result]

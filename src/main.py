@@ -9,7 +9,7 @@ import os
 
 from bot_commands import discord_utilities as du
 from bot_commands.games import blackjack, roulette
-from bot_commands import money, inventory
+from bot_commands import money, inventory, shop
 #load .env file
 load_dotenv(dotenv_path="etc/.env")
 
@@ -25,6 +25,7 @@ blackjack.setup(bot) # import commands from other files
 roulette.setup(bot)
 money.setup(bot)
 inventory.setup(bot)
+shop.setup(bot)
 
 
 info_delete_after_seconds: int = 30

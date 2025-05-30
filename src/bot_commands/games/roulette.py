@@ -23,6 +23,7 @@ roulette_reactions: list[str] = [
     odd_reaction,
 ]
 
+
 start_game_countdown:int = 6 # how long to wait before starting a game
 delete_roulette_gif_after = 10
 

@@ -73,7 +73,6 @@ class Player:
         for pickle_path in object_pickles:
             try:
                 with open(pickle_path, "rb") as f:
-                    print(f"loading {pickle_path}")
                     item = pickle.load(f)
                     items.append(item)
             except (FileNotFoundError, pickle.UnpicklingError) as e:

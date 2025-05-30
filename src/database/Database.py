@@ -18,7 +18,9 @@ class Database(metaclass=Singleton):
         self._name = name
         Files.create_dir_if_not_exist(Loc.datahub())
         self._cursor = sqlite3.connect(f"{Loc.datahub(self._name)}.db").cursor()
+        self._cursor.connection.execute("PRAGMA foreign_keys = ON;")
         self.sanity_check()
+        
 
     def sanity_check(self) -> None:
         db_scheme: DatabaseScheme = BlueprintCompiler().database_scheme_from_blueprints(self._name)
@@ -149,4 +151,3 @@ class Database(metaclass=Singleton):
             """)
 
         self._cursor.execute(f"DROP TABLE {old_table};")
-

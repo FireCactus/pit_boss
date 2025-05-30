@@ -44,5 +44,5 @@ class DiamondRush(EmojiLines):
     _row_amount = 4
     
     def __init__(self) -> None:
-        super().__init__(self._name, self._description, self._representation)
+        super().__init__()
         self._fields = self._generate_fields()
