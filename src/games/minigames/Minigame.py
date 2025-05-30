@@ -12,23 +12,23 @@ class GameResult(StrEnum):
 class MinigameResult(NamedTuple):
     game_result: GameResult
     payout: int
+    name: str
+    discord_id: int
 
 
 T = TypeVar('T')
 
 
 class Minigame(ABC, Generic[T]):
+    _result: T
+    _payout: int
 
-    _win_payout: int
-    _lose_payout: int
-
-    def __init__(self, win_payout: int, lose_payout: int) -> None:
-        self._win_payout = win_payout
-        self._lose_payout = lose_payout
+    def __init__(self, _payout: int) -> None:
+        self._payout = _payout
 
     @abstractmethod
-    def _determine_win(self, player_pick: T) -> MinigameResult:
+    def _determine_results(self, player_pick: T) -> List[MinigameResult]:
         '''
-            Determine whever the loses wins or draws
+            Determine who wins loses or draws
         '''
         pass
