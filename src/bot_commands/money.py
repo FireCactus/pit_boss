@@ -61,7 +61,7 @@ def setup(bot: Bot) -> None:
         amount: int = int(arg_2)
 
         #check if to player exists
-        if db.check_if_player_exists(to_user) ==  False:
+        if db.check_if_player_exists(ctx.message.mentions[0].id) ==  False:
             await ctx.send(f"Sorry, player with name {to_user} does not exist", delete_after=info_delete_after_seconds)
             return None            
 

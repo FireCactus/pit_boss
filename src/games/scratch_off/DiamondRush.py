@@ -2,6 +2,8 @@ from games.scratch_off.EmojiLines import EmojiLines
 from games.scratch_off.ScratchOffTicket import TicketPayoutRank, ScratchOffField
 from player.Item import ItemRepresentation
 
+from player.CasualItem import CasualItemUsage
+
 '''
 Basic scratch off ticket with the structure:
 -------------------------------------
@@ -46,3 +48,19 @@ class DiamondRush(EmojiLines):
     def __init__(self) -> None:
         super().__init__()
         self._fields = self._generate_fields()
+    
+
+    def use(self) -> CasualItemUsage:
+        self._decrement_uses()
+        string: str = f"{self.get_description()}\n"
+        i: int = -1
+        for row in range(self._row_amount):
+            for field in range(self._fields_per_row):
+                i += 1
+                string += f" ||{self._fields[i].label}|| "
+            string += "\n"
+        string += "Diamond Rush Payout table:\n"
+        for amount, emoji in self._paying_emojis.items():
+            string += f"4x{emoji} -> {amount}\n"
+
+        return CasualItemUsage(string)

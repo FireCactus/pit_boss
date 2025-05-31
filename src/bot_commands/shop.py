@@ -17,7 +17,6 @@ from games.scratch_off.SuperPayout import SuperPayout
 shop_message_linger: int = 30
 
 
-
 def setup(bot: Bot) -> None:
     
     @bot.command("shop")
@@ -74,11 +73,10 @@ def setup(bot: Bot) -> None:
                 return None
 
             for item in purchases:
-                player.save_item_to_inventory(item)
-                shop.delete_item_from_stock(item)
+                player.give_item_to_player(item, player)
              
             #remove money from player
-            player.modify_balance(purchase_cost)
+            player.modify_balance(-purchase_cost)
 
             #let the user know what he bought:
             string: str = f"{player.display_name} bought the items:\n"

@@ -4,6 +4,8 @@ from statistics import mean
 import random
 
 from player.Item import Item, ItemRepresentation, DepletedItem
+from player.CasualItem import CasualItem, CasualItemUsage
+
 
 class TicketPayoutRank(NamedTuple):
     rank: int 
@@ -15,7 +17,7 @@ class ScratchOffField(NamedTuple):
     potential_win: Optional[int] = None
     scratched: bool = False
 
-class ScratchOffTicket(Item):
+class ScratchOffTicket(CasualItem, ABC):
 
     _fields_per_row: int
     _row_amount: int
@@ -79,16 +81,12 @@ class ScratchOffTicket(Item):
         
         return total_value
 
-    def use(self) -> None:
-        self._decrement_uses()
+    def get_win_amount(self) -> int:
+        '''
+            Returns the ticket win amount
+        '''
+        return self._rank.win_amount
 
-    def get_win_amount(self) -> Optional[int]:
-        '''
-            Returns the ticket win amount if it is scratched, None otherwise
-        '''
-        if self.get_uses_left == 0:
-            return self._rank.win_amount
-        return None
 
     @abstractmethod
     def _generate_fields(self) -> None:

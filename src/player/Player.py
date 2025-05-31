@@ -7,7 +7,7 @@ from database.PlayersDatabase import PlayersDatabase
 
 db = PlayersDatabase()
 
-#rename to DiscordPlayer and add encapsulation of ctx.message.author as the input instead of the str username
+
 class Player:
     _min_bet: int = 25
     _max_bet: int = 1000000000000
@@ -79,6 +79,9 @@ class Player:
                 print(f"Error while unpickling object: {pickle_path}:\n{e}")
 
         return items
+    
+    def give_item_to_player(self, item:Item, player: "Player") -> None:
+        db.transfer_item_to_player(item.get_filepath(), player.discord_id)
 
         
         

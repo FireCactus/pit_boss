@@ -2,7 +2,7 @@ from games.scratch_off.ScratchOffTicket import ScratchOffTicket, TicketPayoutRan
 import random
 
 from player.Item import ItemRepresentation
-
+from player.CasualItem import CasualItemUsage
 '''
 Basic scratch off ticket with the structure:
 -------------------------------------
@@ -103,3 +103,18 @@ class TransportSearch(ScratchOffTicket):
         #shuffle the list and return
         random.shuffle(fields)
         return fields
+
+    def use(self) -> CasualItemUsage:
+        self._decrement_uses()
+        string: str = f"{self.get_description()}\n"
+        i: int = -1
+        for row in range(self._row_amount):
+            for field in range(self._fields_per_row):
+                i += 1
+                string += f" ||{self._fields[i].label}|| "
+            string += "\n"
+        string += "Diamond Rush Payout table:\n"
+        for amount, emoji in self._paying_emojis.items():
+            string += f"3x{emoji} -> {amount}\n"
+
+        return CasualItemUsage(string)

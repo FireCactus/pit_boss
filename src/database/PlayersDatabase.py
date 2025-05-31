@@ -61,11 +61,10 @@ class PlayersDatabase(Database):
 
     def check_if_player_exists(self, discord_id:int) -> bool:
         query: str= """
-            SELECT 
-                discord_id
-            FROM 
-                players
+            SELECT discord_id
+            FROM players
         """
+
         self._cursor.execute(query)
         result: list[str] = self._cursor.fetchall()
         strings_list = [item[0] for item in result]
@@ -126,7 +125,8 @@ class PlayersDatabase(Database):
         self._cursor.execute(query)
         result: list[str] = self._cursor.fetchall()
         strings_list = [item[0] for item in result]
-       
+        strings_list.pop(0) # remove the shop user
+
         return strings_list
     
     def check_if_player_received_daily(self, discord_id: int) -> bool:
@@ -180,5 +180,18 @@ class PlayersDatabase(Database):
         self._cursor.execute(query, (discord_id,))
         result: list[str] = self._cursor.fetchall()
         return [item[0] for item in result]
+
+    def transfer_item_to_player(self, pickle_path: str, discord_id: int) -> None:
+        # Find the item_id from the items table using the pickle path
+        select_query: str = "SELECT id FROM items WHERE object = ?"
+        self._cursor.execute(select_query, (pickle_path,))
+        item_id: str = self._cursor.fetchone()[0]
+
+        # Update the inventory to assign this item to the new player
+        update_query = "UPDATE eq SET player_discord_id = ? WHERE item_id = ?"
+        self._cursor.execute(update_query, (discord_id, item_id))
+        self._connection.commit()
+
+
     
-db = PlayersDatabase()
+    

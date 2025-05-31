@@ -63,11 +63,8 @@ class Item(ABC):
     def get_representation_image(self) -> Optional[str]:
         return self.__representaion.picture
 
-    @abstractmethod
-    def use(self) -> None:
-        pass
-
     def delete_from_disk(self) -> None:
         os.remove(self.get_filepath())
+    
 
 
