@@ -61,9 +61,9 @@ class BlueprintCompiler:
 
             name: str = parts[0]
             col_type: str = parts[1]
-            restrictions: Optional[List[str]] = parts[2].strip('"').split(',') if len(parts) > 2 and parts[2] else None
-            relation: Optional[str] = parts[3] if len(parts) > 3 and parts[3] else None
-            actions: Optional[List[str]] = parts[4].strip('"').split('/') if len(parts) > 4 and parts[4] else None
+            restrictions: Optional[List[str]] = parts[2].strip('"').split(',') if len(parts) > 2 and parts[2] != "" else None
+            relation: Optional[str] = parts[3] if len(parts) > 3 and parts[3] != "" else None
+            actions: Optional[List[str]] = parts[4].strip('"').split('/') if len(parts) > 4 and parts[4] != "" else None
             
             on_action: Optional[Action]
             if actions is not None:

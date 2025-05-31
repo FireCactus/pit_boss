@@ -1,5 +1,5 @@
-#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                              #ON
-id                      INTEGER         "PRIMARY KEY"           unlocked_achievments(achievement_id)
+#COLUMN                 #TYPE           #RESTRICTIONS           #RELATIONS                #ON
+id                      INTEGER         "PRIMARY KEY"
 name                    TEXT
 description             TEXT
 picture                 TEXT

@@ -1,5 +1,8 @@
-from scratch_off import ScratchOffTicket, TicketPayoutRank, ScratchOffField
+from games.scratch_off.ScratchOffTicket import ScratchOffTicket, TicketPayoutRank, ScratchOffField
 import random
+
+from player.Item import ItemRepresentation
+from player.CasualItem import CasualItemUsage
 '''
 Basic scratch off ticket with the structure:
 -------------------------------------
@@ -16,8 +19,9 @@ Basic scratch off ticket with the structure:
 
 class TransportSearch(ScratchOffTicket):
     _price = 50
-    _name = "Transport search"
+    _name = "Transport search scratch off ticket"
     _description = "Each set of 3 winning transport emojis wins a prize!"
+    _representation = ItemRepresentation(emoji="🎟️", picture=None)
     _ranks = ( 
         TicketPayoutRank(rank=13, win_amount=0,    probability=0.25), 
         TicketPayoutRank(rank=12, win_amount=5,    probability=0.1),  # 1x5
@@ -64,7 +68,7 @@ class TransportSearch(ScratchOffTicket):
     _how_many_same_fields_to_win: int = 3
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(self._name, self._description, self._representation)
         self._fields = self._generate_fields()
 
 
@@ -99,3 +103,18 @@ class TransportSearch(ScratchOffTicket):
         #shuffle the list and return
         random.shuffle(fields)
         return fields
+
+    def use(self) -> CasualItemUsage:
+        self._decrement_uses()
+        string: str = f"{self.get_description()}\n"
+        i: int = -1
+        for row in range(self._row_amount):
+            for field in range(self._fields_per_row):
+                i += 1
+                string += f" ||{self._fields[i].label}|| "
+            string += "\n"
+        string += "Diamond Rush Payout table:\n"
+        for amount, emoji in self._paying_emojis.items():
+            string += f"3x{emoji} -> {amount}\n"
+
+        return CasualItemUsage(string)

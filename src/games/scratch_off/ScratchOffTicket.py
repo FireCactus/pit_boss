@@ -3,6 +3,10 @@ from typing import NamedTuple, Optional
 from statistics import mean 
 import random
 
+from player.Item import Item, ItemRepresentation, DepletedItem
+from player.CasualItem import CasualItem, CasualItemUsage
+
+
 class TicketPayoutRank(NamedTuple):
     rank: int 
     win_amount: int
@@ -13,7 +17,7 @@ class ScratchOffField(NamedTuple):
     potential_win: Optional[int] = None
     scratched: bool = False
 
-class ScratchOffTicket(ABC):
+class ScratchOffTicket(CasualItem, ABC):
 
     _fields_per_row: int
     _row_amount: int
@@ -22,12 +26,11 @@ class ScratchOffTicket(ABC):
     _price: int
     _name: str
     _description: str
+    _representation: ItemRepresentation
     
     _ranks: tuple[TicketPayoutRank]
     _rank: TicketPayoutRank
     _fields: list[ScratchOffField]
-    
-    _scratched : bool
     
     #used for simple number scratch offs
     _winning_num: Optional[int] 
@@ -37,8 +40,8 @@ class ScratchOffTicket(ABC):
     _paying_emojis: Optional[dict[int,str]]
 
 
-    def __init__(self) -> None:
-
+    def __init__(self, name: str, description:str, representation: ItemRepresentation) -> None:
+        super().__init__(name, description, representation)
         self.check_if_ticket_probabilites_are_valid()
         self._rank = self._decide_ticket_rank()
 
@@ -78,15 +81,12 @@ class ScratchOffTicket(ABC):
         
         return total_value
 
-    def scratch(self) -> Optional[int]:
+    def get_win_amount(self) -> int:
         '''
-            returns the win amuont of the scratcher and marks it as scratched
+            Returns the ticket win amount
         '''
-        if self._scratched:
-            return None
-
-        self._scratched = True
         return self._rank.win_amount
+
 
     @abstractmethod
     def _generate_fields(self) -> None:
@@ -94,8 +94,6 @@ class ScratchOffTicket(ABC):
             generate the fields in the scratcher
         '''      
         pass
-
-
 
 
     def __repr__(self) -> str:

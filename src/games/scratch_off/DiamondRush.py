@@ -1,5 +1,8 @@
 from games.scratch_off.EmojiLines import EmojiLines
 from games.scratch_off.ScratchOffTicket import TicketPayoutRank, ScratchOffField
+from player.Item import ItemRepresentation
+
+from player.CasualItem import CasualItemUsage
 
 '''
 Basic scratch off ticket with the structure:
@@ -16,8 +19,9 @@ if all 4 characters match - you win
 
 class DiamondRush(EmojiLines):
     _price = 55
-    _name = "Diamond rush"
+    _name = "Diamond rush scratch off ticket"
     _description = "if all 4 emojis in a row are the same you win!"
+    _representation = ItemRepresentation(emoji="🎟️", picture=None)
     _ranks = (
         TicketPayoutRank(rank=8, win_amount=0, probability=0.15),
         TicketPayoutRank(rank=7, win_amount=10, probability=0.15),
@@ -44,13 +48,19 @@ class DiamondRush(EmojiLines):
     def __init__(self) -> None:
         super().__init__()
         self._fields = self._generate_fields()
+    
 
+    def use(self) -> CasualItemUsage:
+        self._decrement_uses()
+        string: str = f"{self.get_description()}\n"
+        i: int = -1
+        for row in range(self._row_amount):
+            for field in range(self._fields_per_row):
+                i += 1
+                string += f" ||{self._fields[i].label}|| "
+            string += "\n"
+        string += "Diamond Rush Payout table:\n"
+        for amount, emoji in self._paying_emojis.items():
+            string += f"4x{emoji} -> {amount}\n"
 
-
-import pickle
-
-ticket = DiamondRush()
-with open("diamond_rush.pkl",'rb') as f:
-    ticket = pickle.load(f)
-
-print(ticket)
+        return CasualItemUsage(string)

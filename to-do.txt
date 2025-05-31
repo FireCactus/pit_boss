@@ -6,16 +6,11 @@
 
     -daily minigames to earn money rock paper scissors, coin toss (Milosz)
 
-    - SQLite database instead of players.yaml
     - Trigger renew daily reward at midnight
     - Implement player data (scores, winsm loses)
     - Implement achievements (win 5 hands of bj in row, etc.)
 
     -Przepisanie systemu płatnosci
-
-############## BUGS TO FIX 
-    - In blackjack the player and/or the dealer can get face down cards duting initial deal.
-    - In roulette you can bet with 0$
 
 ############## IDEAS FOR FUTURE
 
@@ -32,3 +27,17 @@
     - stock market
     - Bank Heist Minigame (MMO EVENT)
     - sklep
+
+
+    -sklep jest globalny z losowymi itemami ktore losuja sie codziennie
+
+
+######### ITEM IDEAS
+    - Force a player to go all in on their next bet
+    - For x amount of time leech a % of a players winnings
+    - Steal X% of the balance of the richest player
+    - Drukara pieniedzy: raz na X czasu drukuje Ci Y pieniedzy
+    - twoj nastepny win jest pomnożony przez X
+    - twoj następny loss jest podzielony przez X
+    - refresh sklepu
+

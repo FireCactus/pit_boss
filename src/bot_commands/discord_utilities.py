@@ -14,12 +14,34 @@ from typing import *
 vanishing_message_timer: int = 15
 ask_message_timeout: int = 45
 
-async def send_vanishing_message(context: Context, string: str, time_to_vanish: int=vanishing_message_timer) -> Message:
-    ''' 
-    Sends a text message through discord that will delete after _delete_message_after and returns the message object
-    '''
-    return await context.send(string, delete_after=time_to_vanish)
+DISCORD_MESSAGE_CHAR_LIMIT = 2000
 
+async def send_vanishing_message(context: Context, string: str, time_to_vanish: int = vanishing_message_timer) -> list[Message]:
+    '''
+    Sends text messages through Discord, splitting the message into chunks
+    of <=2000 characters (Discord limit), all set to auto-delete after a delay.
+    Returns the last Message object.
+    '''
+    message: Message
+
+    # Split the message into 2000-char chunks
+    while string:
+        chunk = string[:DISCORD_MESSAGE_CHAR_LIMIT]
+        # Try not to break in the middle of a word or line
+        if len(string) > DISCORD_MESSAGE_CHAR_LIMIT:
+            last_newline = chunk.rfind('\n')
+            last_space = chunk.rfind(' ')
+            split_index = max(last_newline, last_space)
+            if split_index > 0:
+                chunk = string[:split_index]
+        else:
+            split_index = len(chunk)
+
+        message = await context.send(chunk.strip(), delete_after=time_to_vanish)
+        string = string[split_index:].lstrip()
+
+    return message
+    
 
 async def send_persistant_message(context: Context, string: str) -> Message:
     ''' 

@@ -1,9 +1,13 @@
+import random
+
 from games.scratch_off.ScratchOffTicket import (
     ScratchOffTicket,
     TicketPayoutRank,
     ScratchOffField,
 )
-import random
+from player.Item import ItemRepresentation
+from player.CasualItem import CasualItemUsage
+
 
 """
 Basic scratch off ticket with the structure:
@@ -17,8 +21,9 @@ Basic scratch off ticket with the structure:
 
 class SuperPayout(ScratchOffTicket):
     _price = 10
-    _name = "Super Payout"
+    _name = "Super Payout scratch off ticket"
     _description = "if a scratched number is same as winning number you win!"
+    _representation = ItemRepresentation(emoji="🎟️", picture=None)
     _ranks = (
         TicketPayoutRank(rank=5, win_amount=0, probability=0.4),
         TicketPayoutRank(rank=4, win_amount=5, probability=0.4),
@@ -31,7 +36,7 @@ class SuperPayout(ScratchOffTicket):
     _row_amount = 2
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(self._name, self._description, self._representation)
         self._fields = self._generate_fields()
 
     def _generate_fields(self) -> list[ScratchOffField]:
@@ -51,7 +56,7 @@ class SuperPayout(ScratchOffTicket):
             field = ScratchOffField(str(self._winning_num + 1), 5)
         fields.append(field)
 
-        for _ in range(self._field_quantity - 2):
+        for _ in range((self._fields_per_row*self._fields_per_row) - 2):
             rand_rank = random.choice(self._ranks)
             win_amount = rand_rank.win_amount
             if win_amount == 0:
@@ -66,3 +71,21 @@ class SuperPayout(ScratchOffTicket):
 
         random.shuffle(fields)
         return fields
+
+    def use(self) -> CasualItemUsage:
+        self._decrement_uses()
+        string: str = f"{self.get_description()}\n"
+        i: int = -1
+        for row in range(self._row_amount):
+            for field in range(self._fields_per_row):
+                i += 1
+                if int(self._fields[i].label) >= 10:
+                    string += f" ||{self._fields[i].label}|| "
+                else:
+                    string += f" ||0{self._fields[i].label}|| "
+
+            string += "\n"
+        string += "Super Payout Payout table:\n"
+        string += f"if you find ||{self._winning_num}|| you get ||{self.get_win_amount()}||!"
+
+        return CasualItemUsage(string)
