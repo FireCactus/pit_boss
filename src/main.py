@@ -10,6 +10,8 @@ import os
 from bot_commands import discord_utilities as du
 from bot_commands.games import blackjack, roulette
 from bot_commands import money, inventory, shop
+from bot_commands.minigames import cointoss
+
 #load .env file
 load_dotenv(dotenv_path="etc/.env")
 
@@ -26,6 +28,8 @@ roulette.setup(bot)
 money.setup(bot)
 inventory.setup(bot)
 shop.setup(bot)
+
+cointoss.setup(bot)
 
 
 info_delete_after_seconds: int = 30
