@@ -78,7 +78,7 @@ def setup(bot: Bot) -> None:
                 return None
             
             item = items[item_in_inv-1]
-            await du.send_vanishing_message(ctx, f"{player.display_name} used {item.get_name()}!")
+            await du.send_persistant_message(ctx, f"{player.display_name} used {item.get_name()}!")
 
             if issubclass(type(item), CasualItem):
                 message: str = item.use().returned_string

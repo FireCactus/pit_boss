@@ -14,14 +14,11 @@ class TicketPayoutRank(NamedTuple):
 
 class ScratchOffField(NamedTuple):
     label: str
-    potential_win: Optional[int] = None
-    scratched: bool = False
-
+    
 class ScratchOffTicket(CasualItem, ABC):
 
     _fields_per_row: int
     _row_amount: int
-    _field_quantity: int
 
     _price: int
     _name: str
@@ -31,9 +28,6 @@ class ScratchOffTicket(CasualItem, ABC):
     _ranks: tuple[TicketPayoutRank]
     _rank: TicketPayoutRank
     _fields: list[ScratchOffField]
-    
-    #used for simple number scratch offs
-    _winning_num: Optional[int] 
 
     #used for emoji scratch offs
     _possible_emojis: Optional[list[str]]

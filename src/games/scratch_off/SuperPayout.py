@@ -32,44 +32,35 @@ class SuperPayout(ScratchOffTicket):
         TicketPayoutRank(rank=1, win_amount=100, probability=0.02),
     )
 
-    _fields_per_row = 10
+    _fields_per_row = 8
     _row_amount = 2
-
+    _winning_number: int
+    
     def __init__(self) -> None:
         super().__init__(self._name, self._description, self._representation)
         self._fields = self._generate_fields()
+        
 
     def _generate_fields(self) -> list[ScratchOffField]:
 
         fields: list[ScratchOffField] = []
-        field: ScratchOffField 
 
-        self._winning_num = random.randint(1, 31)
-        if self._rank.win_amount != 0:
-            field = ScratchOffField(str(self._winning_num), self._rank.win_amount)
+        field_quantity: int = self._fields_per_row * self._row_amount        
+        numbers_left_to_choose: list[int] = list(range(1, 41))
+
+        #generate fields with random numbers
+        for _ in range(field_quantity):
+            random_number: int = random.choice(numbers_left_to_choose)
+
+            numbers_left_to_choose.remove(random_number)
+            fields.append(ScratchOffField(label=str(random_number)))
+
+        #pick the winning number if any:
+        if self.get_win_amount() == 0:
+            self._winning_number = random.choice(numbers_left_to_choose)
         else:
-            rand_rank: TicketPayoutRank = random.choice(self._ranks)
-            win_amount: int = rand_rank.win_amount
-            if win_amount == 0:
-                win_amount = 5
+            self._winning_number = int(random.choice(fields).label)
 
-            field = ScratchOffField(str(self._winning_num + 1), 5)
-        fields.append(field)
-
-        for _ in range((self._fields_per_row*self._fields_per_row) - 2):
-            rand_rank = random.choice(self._ranks)
-            win_amount = rand_rank.win_amount
-            if win_amount == 0:
-                win_amount = 5
-
-            number: int = random.randint(1, 31)
-            if number == self._winning_num:
-                number += 1
-
-            field = ScratchOffField(str(number), win_amount)
-            fields.append(field)
-
-        random.shuffle(fields)
         return fields
 
     def use(self) -> CasualItemUsage:
@@ -85,7 +76,15 @@ class SuperPayout(ScratchOffTicket):
                     string += f" ||0{self._fields[i].label}|| "
 
             string += "\n"
-        string += "Super Payout Payout table:\n"
-        string += f"if you find ||{self._winning_num}|| you get ||{self.get_win_amount()}||!"
+        string += "Super Payout Winning numbers:\n"
+        if self.get_win_amount() == 0:
+            string += f"if you find ||{self._winning_number}|| you get ||{self.get_win_amount()}||!"
+        else:
+            string += f"if you find ||{self._winning_number}|| you get ||{random.choice([5,10,50,100])}||!"
 
         return CasualItemUsage(string)
+
+
+ticket = SuperPayout()
+k = ticket.use()
+print(k)
