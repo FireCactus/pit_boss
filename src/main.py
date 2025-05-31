@@ -45,9 +45,15 @@ async def help(ctx: Context) -> None:
         f"!balance all -> Returns the balances of all players",
         f"!blackjack -> Starts a blackjack game",
         f"!bet size [amount] -> Changes your bet size to the provided amount",
-        f"!give [player name] [amount] -> Transfers an amount of money from your account to the provided users",
+        f"!give @mention [amount] -> Transfers an amount of money from your account to the provided users",
         f"!all in -> Changes your bet size to the maximum allowed",
-        f"!roulette -> starts roulette game"
+        f"!roulette -> starts roulette game",
+        f"!shop -> shows the current items in the shop",
+        f"!shop buy [inv_number] -> buys the item in the shop at the given number",
+        f"!inv -> shows the contents of your inventory",
+        f"!item give @mention [inv_number] -> gives the mentioned player an item from your inventory",
+        f"!item use [inv_number] -> uses the item in your inventory",
+        
     ]
 
     string: str = "-------------------- available commands --------------------\n"
