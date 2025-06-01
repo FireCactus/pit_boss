@@ -77,14 +77,10 @@ class SuperPayout(ScratchOffTicket):
 
             string += "\n"
         string += "Super Payout Winning numbers:\n"
-        if self.get_win_amount() == 0:
+        if self.get_win_amount() != 0:
             string += f"if you find ||{self._winning_number}|| you get ||{self.get_win_amount()}||!"
         else:
             string += f"if you find ||{self._winning_number}|| you get ||{random.choice([5,10,50,100])}||!"
 
         return CasualItemUsage(string)
 
-
-ticket = SuperPayout()
-k = ticket.use()
-print(k)

@@ -55,6 +55,18 @@ class TransportSearch(ScratchOffTicket):
         "🛴"
     ]
 
+    _safe_emojis: list[str] = [
+        "🚙",
+        "✈️",
+        "🚋", 
+        "🚜", 
+        "🏍️", 
+        "🦽", 
+        "🚕", 
+        "🚂", 
+        "🛴"
+    ]
+
     _paying_emojis = {
         500: "🚀",
         100: "🚊",
@@ -91,12 +103,15 @@ class TransportSearch(ScratchOffTicket):
         for _ in range(remaining_fields):
             emoji = random.choice(self._possible_emojis)
 
+            #if chosen emoji can result in potential payout
             if emoji in self._paying_emojis.values():
-                #check if we can add that emoji (has to be less than self._how_many_same_fields_to_win)
+                #check how many of such emoji are already in the fields
+
                 emoji_count: int = [field.label for field in fields].count(emoji)
-                if emoji_count % self._how_many_same_fields_to_win == self._how_many_same_fields_to_win -1:
+                #if 1 more of this emoji would cause another win, change it to a new one from safe emojis
+                if emoji_count % self._how_many_same_fields_to_win == (self._how_many_same_fields_to_win -1):
                     self._possible_emojis.remove(emoji)
-                    emoji = random.choice(self._possible_emojis)
+                    emoji = random.choice(self._safe_emojis)
 
             fields.append(ScratchOffField(label=emoji))
 
@@ -118,3 +133,4 @@ class TransportSearch(ScratchOffTicket):
             string += f"3x{emoji} -> {amount}\n"
 
         return CasualItemUsage(string)
+
