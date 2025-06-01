@@ -99,13 +99,13 @@ async def get_user_reactions_on_message(message: Message) -> Dict[User, list[str
             async for user in reaction.users():
                 if user.bot:
                     continue  # Skip bot reactions
-                if user.name not in user_reactions:
+                if user not in user_reactions:
                     user_reactions[user] = [] # add entry if missing
 
                 user_reactions[user].append(str(reaction.emoji))
         except Exception as e:
             print(f"Error fetching users for reaction {reaction}: {e}")
-
+            
     return user_reactions
 
 

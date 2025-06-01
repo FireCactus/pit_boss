@@ -44,16 +44,17 @@ def setup(bot: Bot) -> None:
             player = Player(user)
             bet: int = player.get_player_bet()
             for reaction in reactions:
-                balance: int = player.get_balance()          
+                balance: int = player.get_balance()    
+
+                if reaction not in roulette_reactions:
+                    continue      
 
                 if bet > balance:
                     poor_text = f"Sorry {player.display_name} You have only {balance}, but you bet {bet}.\nChange your bet size using !bet size [amount]"
                     await du.send_vanishing_message(ctx, poor_text)
                     continue
 
-                if reaction not in roulette_reactions:
-                    continue
-
+                
                 player.modify_balance(-bet)
                 pick: RouletteOutcomes
                 if reaction == odd_reaction:
@@ -71,8 +72,7 @@ def setup(bot: Bot) -> None:
                 elif reaction == black_reaction:
                     pick = RouletteOutcomes.BLACK
                 
-                rt_bet: RouletteBet = RouletteBet(name=player.display_name, discord_id=player.discord_id, bet_amount=bet, pick=pick)
-                bets.append(rt_bet)
+                bets.append(RouletteBet(name=player.display_name, discord_id=player.discord_id, bet_amount=bet, pick=pick))
         
         if len(bets) == 0:
             await du.send_vanishing_message(ctx, "Noone place a bet :(")
