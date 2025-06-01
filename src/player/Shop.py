@@ -24,7 +24,7 @@ class Shop:
 
     def __init__(self) -> None:
         self.possible_shop_items: list[ShopItem] = [
-            #ShopItem(SuperPayout, 0.8, 1, 6),
+            ShopItem(SuperPayout, 0.8, 1, 6),
             ShopItem(EmojiLines, 0.6, 1, 5),
             ShopItem(TransportSearch, 0.5, 1, 4),
             ShopItem(DiamondRush, 0.4, 1, 3),
