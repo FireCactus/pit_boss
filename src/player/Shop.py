@@ -10,6 +10,8 @@ from games.scratch_off.TransportSearch import TransportSearch
 from games.scratch_off.DiamondRush import DiamondRush
 from games.scratch_off.EmojiLines import EmojiLines
 from games.scratch_off.SuperPayout import SuperPayout
+from games.scratch_off.XMarksTheSpot import XMarksTheSpot
+
 
 db = PlayersDatabase()
 
@@ -24,10 +26,11 @@ class Shop:
 
     def __init__(self) -> None:
         self.possible_shop_items: list[ShopItem] = [
-            ShopItem(SuperPayout, 0.8, 1, 6),
-            ShopItem(EmojiLines, 0.6, 1, 5),
+            ShopItem(SuperPayout,     0.8, 2, 6),
+            ShopItem(EmojiLines,      0.6, 1, 5),
+            ShopItem(XMarksTheSpot,   0.9, 3, 8),
             ShopItem(TransportSearch, 0.5, 1, 4),
-            ShopItem(DiamondRush, 0.4, 1, 3),
+            ShopItem(DiamondRush,     0.4, 2, 4),
         ]
 
     def get_items_in_stock(self) -> list[Item]:

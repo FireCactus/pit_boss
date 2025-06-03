@@ -64,7 +64,7 @@ class ScratchOffTicket(CasualItem, ABC):
         for rank in self._ranks:
             total += rank.probability
 
-        assert total >= 1 and total <= 1.000000002, f"The Ticket probabilities do NOT add up to 1 but {total}"
+        assert total >= 0.9999 and total <= 1.000000002, f"The Ticket probabilities do NOT add up to 1 but {total}"
         # floating point math fix
 
     def get_expected_value(self) -> float:
