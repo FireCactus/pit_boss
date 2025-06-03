@@ -14,17 +14,17 @@ if O loses or draws -> you lose
 ------------------------------------
 '''
 class TickTackToeTable:
-        fields: list[Optional[str]] = [None] * 9
-        o_emoji: str
-        x_emoji: str
+    fields: list[Optional[str]] = [None] * 9
+    o_emoji: str
+    x_emoji: str
+
+    self.win_patterns: list[list[int]] = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],  # rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],  # columns
+        [0, 4, 8], [2, 4, 6],             # diagonals
+    ]
     
-        self.win_patterns: list[list[int]] = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],  # rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],  # columns
-            [0, 4, 8], [2, 4, 6],             # diagonals
-        ]
-    
-    def __init__(self, o_emoji: str = "⭕", x_emoji: str = "❌" o_moves_first: bool = True) -> None:    
+    def __init__(self, o_emoji: str = "⭕", x_emoji: str = "❌", o_moves_first: bool = True) -> None:    
         self.o_emoji = o_emoji
         self.x_emoji = x_emoji
     
