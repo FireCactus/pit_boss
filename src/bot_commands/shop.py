@@ -9,12 +9,8 @@ from player.Player import Player
 from player.Shop import Shop
 from bot_commands import discord_utilities as du 
 
-from games.scratch_off.TransportSearch import TransportSearch
-from games.scratch_off.DiamondRush import DiamondRush
-from games.scratch_off.EmojiLines import EmojiLines
-from games.scratch_off.SuperPayout import SuperPayout
 
-shop_message_linger: int = 30
+shop_message_linger: int = 45
 
 
 def setup(bot: Bot) -> None:
@@ -83,7 +79,7 @@ def setup(bot: Bot) -> None:
             for item in purchases:
                 string += f"- {item.get_name()}\n"
 
-            await du.send_vanishing_message(ctx, string)
+            await du.send_persistant_message(ctx, string)
 
         elif arg_1 == "restock_please":
             shop: Shop = Shop()
