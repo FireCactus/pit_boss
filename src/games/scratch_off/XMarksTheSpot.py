@@ -14,19 +14,21 @@ if O loses or draws -> you lose
 ------------------------------------
 '''
 class TickTackToeTable:
-    def __init__(self, o_moves_first: bool = True) -> None:
-        self.fields: list[Optional[str]] = [None] * 9
-        self.o_emoji: str = "⭕"
-        self.x_emoji: str = "❌"
-        
-        self.first_to_move: str = self.o_emoji if o_moves_first else self.x_emoji
-
+        fields: list[Optional[str]] = [None] * 9
+        o_emoji: str
+        x_emoji: str
+    
         self.win_patterns: list[list[int]] = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8],  # rows
             [0, 3, 6], [1, 4, 7], [2, 5, 8],  # columns
             [0, 4, 8], [2, 4, 6],             # diagonals
         ]
-
+    
+    def __init__(self, o_emoji: str = "⭕", x_emoji: str = "❌" o_moves_first: bool = True) -> None:    
+        self.o_emoji = o_emoji
+        self.x_emoji = x_emoji
+    
+        self.first_to_move: str = self.o_emoji if o_moves_first else self.x_emoji
 
     def _check_if_symbol_wins_on_board(self, fields: list[str], symbol: str) -> bool:
         '''
