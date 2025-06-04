@@ -74,13 +74,12 @@ def setup(bot: Bot) -> None:
             #remove money from player
             player.modify_balance(-purchase_cost)
 
+            #restock the shop
+            shop.restock_unlimited_shop_items()
+
             #let the user know what he bought:
             string: str = f"{player.display_name} bought the items:\n"
             for item in purchases:
                 string += f"- {item.get_name()}\n"
 
             await du.send_persistant_message(ctx, string)
-
-        elif arg_1 == "restock_please":
-            shop: Shop = Shop()
-            shop.restock()
