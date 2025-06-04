@@ -118,17 +118,17 @@ def setup(bot: Bot) -> None:
 
         #pay the player 
         if winning_player == None:
-            await du.send_persistant_message(context, f"{challenging_player.display_name} and {challenged_player.display_name} met their match at {challenge_games[game_choice]}!\n No one Won or lost")
+            await du.send_persistant_message(ctx, f"{challenging_player.display_name} and {challenged_player.display_name} met their match at {challenge_games[game_choice]}!\n No one Won or lost")
             return None
 
         if winning_player == challenging_player:
-            await du.send_persistant_message(context, f"{challenging_player.display_name} Won against {challenged_player.display_name} at {challenge_games[game_choice]}!\n Transferring {amount} to {challenging_player.display_name} from {challenged_player.display_name}'s account")
+            await du.send_persistant_message(ctx, f"{challenging_player.display_name} Won against {challenged_player.display_name} at {challenge_games[game_choice]}!\n Transferring {amount} to {challenging_player.display_name} from {challenged_player.display_name}'s account")
             challenging_player.modify_balance(amount)
             challenged_player.modify_balance(-amount)
             return None
         
         else:
-            await du.send_persistant_message(context, f"{challenged_player.display_name} Won against {challenging_player.display_name} at {challenge_games[game_choice]}!\n Transferring {amount} to {challenged_player.display_name} from {challenging_player.display_name}'s account")
+            await du.send_persistant_message(ctx, f"{challenged_player.display_name} Won against {challenging_player.display_name} at {challenge_games[game_choice]}!\n Transferring {amount} to {challenged_player.display_name} from {challenging_player.display_name}'s account")
             challenged_player.modify_balance(amount)
             challenging_player.modify_balance(-amount)
             return None
