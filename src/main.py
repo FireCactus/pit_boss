@@ -54,6 +54,7 @@ async def help(ctx: Context) -> None:
         f"!inv -> shows the contents of your inventory",
         f"!item give @mention [inv_number] -> gives the mentioned player an item from your inventory",
         f"!item use [inv_number] -> uses the item in your inventory",
+        f"!challenge @mention [amount] -> challenge a user to a game for money!"
         
     ]
 
