@@ -166,9 +166,3 @@ class XMarksTheSpot(ScratchOffTicket):
         string += f"{table.o_emoji} Wins -> {self._ranks[0].win_amount}\n"
 
         return CasualItemUsage(string)
-
-  
-tick = XMarksTheSpot()
-print(tick.use().returned_string)
-print(tick.get_win_amount())
-print(tick.get_expected_value())
