@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import os
 
 from bot_commands import discord_utilities as du
-from bot_commands.games import blackjack, roulette
+from bot_commands.games import blackjack, roulette, challenge_player
 from bot_commands import money, inventory, shop
 from bot_commands.minigames import cointoss
 
@@ -28,6 +28,7 @@ roulette.setup(bot)
 money.setup(bot)
 inventory.setup(bot)
 shop.setup(bot)
+challenge_player.setup(bot)
 
 cointoss.setup(bot)
 

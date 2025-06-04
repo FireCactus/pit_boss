@@ -15,11 +15,15 @@ class Player:
 
     discord_id: int
     display_name:str
+    discord_user: User
 
     def __init__(self, discord_user: User) -> None:
         
+        self.discord_user = discord_user
+
         self.discord_id = discord_user.id
         self.display_name = str(discord_user)
+        
 
         # Add player to db if doesnt exist
         if db.check_if_player_exists(self.discord_id) == False:
