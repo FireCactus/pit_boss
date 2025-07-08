@@ -10,6 +10,7 @@ They are triggered at creation unless enabled is set to False.
 If recuriing is True, then the event will keep activating in the background
 '''
 
+
 class ClockEvent():
     def __init__(self, cron_string: str, action: Callable[[], None], recurring: bool = True, enabled: bool = True) -> None:
         assert croniter.is_valid(cron_string), "Invalid CRON string"
@@ -61,8 +62,3 @@ class ClockEvent():
 
         self.running = False
 
-
-    
-
-
-    

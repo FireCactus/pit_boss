@@ -152,6 +152,16 @@ class PlayersDatabase(Database):
         self._cursor.execute(query, (value, discord_id))
         self._connection.commit()
 
+    def renew_daily_for_all(self) -> None:
+        query: str= """
+           UPDATE players
+           SET received_daily=false;
+        """
+
+        self._cursor.execute(query, (value, discord_id))
+        self._connection.commit()
+
+
     def save_item_to_player_inventory(self, discord_id: int, pickle_path: str) -> None:
 
         item_query:str = "INSERT INTO items (object) VALUES (?);"

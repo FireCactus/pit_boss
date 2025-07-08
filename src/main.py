@@ -3,10 +3,10 @@ import asyncio
 from discord import Intents
 from discord.ext import commands
 from discord.ext.commands import Context, Bot
-
 from dotenv import load_dotenv
 import os
 
+#import commands
 from bot_commands import discord_utilities as du
 from bot_commands.games import blackjack, roulette, challenge_player
 from bot_commands import money, inventory, shop
@@ -22,18 +22,21 @@ intents.messages = True
 intents.guilds = True
 
 bot: Bot = Bot(command_prefix='!', intents=intents, help_command=None)
-
-blackjack.setup(bot) # import commands from other files
+# import commands from other files
+blackjack.setup(bot) 
 roulette.setup(bot)
 money.setup(bot)
 inventory.setup(bot)
 shop.setup(bot)
 challenge_player.setup(bot)
-
 cointoss.setup(bot)
 
-
-info_delete_after_seconds: int = 30
+@bot.event
+async def on_ready()-> None:
+    print("Initializing schedules")
+    # import and initialize schedules
+    from schedule import bot_schedules
+    print("Schedules Initialized")
 
 @bot.command("help")
 async def help(ctx: Context) -> None:
@@ -62,7 +65,7 @@ async def help(ctx: Context) -> None:
     for command in command_list:
         string += command + "\n"
     string += "-----------------------------------------------------------"
-    await du.send_vanishing_message(ctx, string, info_delete_after_seconds)
+    await du.send_vanishing_message(ctx, string, time_to_vanish=30)
 
 
 if __name__ == "__main__":
