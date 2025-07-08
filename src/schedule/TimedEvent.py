@@ -1,23 +1,20 @@
 from typing import *
 from asyncio import *
 import time
-import random
 
 '''
-A random event that triggers between x and y amount of seconds
+A timed event is one that triggers after x amount of seconds.
 They are triggered at creation unless enabled is set to False.
 If recuriing is True, then the event will keep activating in the background
 '''
 
 
-class RandomEvent():
-    def __init__(self, min_time:int, max_time: int, action: Callable[[], None], recurring: bool = True, enabled: bool = True) -> None:
+class TimedEvent():
+    def __init__(self, reactivation_time: int, action: Callable[[], None], recurring: bool = True, enabled: bool = True) -> None:
         
-        assert (min_time > 0 and max_time > 0), "Error while creating RandomEvent!\n min_time and max_time time must be at least 1s"
-        assert min_time < max_time, "Error while creating RandomEvent!\nmin_time has to be smaller than max_time"
+        assert reactivation_time > 0, "Error while creating TimedEvent!\nreactivation time must be at least 1s"
         
-        self.min_time: int = min_time
-        self.max_time: int = max_time
+        self.reactivation_time: int = reactivation_time
         self.recurring: bool = recurring
         self.action: Callable[[], None] = action
         self.enabled: bool = enabled
@@ -46,7 +43,7 @@ class RandomEvent():
     async def trigger(self) -> None:
         self.running = True
         while self.enabled:
-            await sleep(random.randint(self.min_time, self.max_time))
+            await sleep(self.reactivation_time)
             if self.enabled:
                 self.last_action_time = time.time()
                 self.action()
