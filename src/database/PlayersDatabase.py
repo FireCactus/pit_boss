@@ -158,7 +158,7 @@ class PlayersDatabase(Database):
            SET received_daily=false;
         """
 
-        self._cursor.execute(query, (value, discord_id))
+        self._cursor.execute(query)
         self._connection.commit()
 
 
